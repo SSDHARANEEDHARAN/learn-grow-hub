@@ -1,22 +1,22 @@
 import { Link } from 'react-router-dom';
-import { Course } from '@/types/course';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Star, Clock, BookOpen, Users } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { CourseWithDetails } from '@/hooks/useCourses';
 
 interface CourseCardProps {
-  course: Course;
+  course: CourseWithDetails;
   showProgress?: boolean;
+  progress?: number;
 }
 
-const CourseCard = ({ course, showProgress = false }: CourseCardProps) => {
+const CourseCard = ({ course, showProgress = false, progress = 0 }: CourseCardProps) => {
   return (
     <Link to={`/course/${course.id}`}>
       <div className="group border border-border bg-card overflow-hidden hover-lift cursor-pointer">
         {/* Thumbnail */}
         <div className="relative overflow-hidden">
           <img 
-            src={course.thumbnail} 
+            src={course.thumbnail_url || '/placeholder.svg'} 
             alt={course.title}
             className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
           />
@@ -24,14 +24,9 @@ const CourseCard = ({ course, showProgress = false }: CourseCardProps) => {
           
           {/* Badges */}
           <div className="absolute top-3 left-3 flex gap-2">
-            {course.isBestseller && (
+            {course.is_bestseller && (
               <span className="px-2 py-1 bg-primary text-primary-foreground text-xs font-bold">
                 BESTSELLER
-              </span>
-            )}
-            {course.isNew && (
-              <span className="px-2 py-1 bg-foreground text-background text-xs font-bold">
-                NEW
               </span>
             )}
           </div>
@@ -39,9 +34,11 @@ const CourseCard = ({ course, showProgress = false }: CourseCardProps) => {
           {/* Price */}
           <div className="absolute bottom-3 right-3">
             <div className="border border-border bg-card px-3 py-1">
-              <span className="font-display font-bold">${course.price}</span>
-              {course.originalPrice && (
-                <span className="text-xs text-muted-foreground line-through ml-1">${course.originalPrice}</span>
+              <span className="font-display font-bold">${course.price || 0}</span>
+              {course.original_price && course.original_price > (course.price || 0) && (
+                <span className="text-xs text-muted-foreground line-through ml-1">
+                  ${course.original_price}
+                </span>
               )}
             </div>
           </div>
@@ -51,16 +48,16 @@ const CourseCard = ({ course, showProgress = false }: CourseCardProps) => {
         <div className="p-5 space-y-4">
           {/* Category & Level */}
           <div className="flex items-center gap-2 text-xs">
-            <span className="px-2 py-1 bg-secondary text-secondary-foreground font-medium">
-              {course.category}
-            </span>
-            <span className={`px-2 py-1 font-medium ${
-              course.level === 'Beginner' ? 'bg-secondary text-secondary-foreground' :
-              course.level === 'Intermediate' ? 'bg-secondary text-secondary-foreground' :
-              'bg-secondary text-secondary-foreground'
-            }`}>
-              {course.level}
-            </span>
+            {course.category && (
+              <span className="px-2 py-1 bg-secondary text-secondary-foreground font-medium">
+                {course.category}
+              </span>
+            )}
+            {course.level && (
+              <span className="px-2 py-1 bg-secondary text-secondary-foreground font-medium">
+                {course.level.charAt(0).toUpperCase() + course.level.slice(1)}
+              </span>
+            )}
           </div>
 
           {/* Title */}
@@ -69,25 +66,33 @@ const CourseCard = ({ course, showProgress = false }: CourseCardProps) => {
           </h3>
 
           {/* Instructor */}
-          <div className="flex items-center gap-2">
-            <img 
-              src={course.instructorAvatar} 
-              alt={course.instructor}
-              className="w-6 h-6 object-cover"
-            />
-            <span className="text-sm text-muted-foreground">{course.instructor}</span>
-          </div>
+          {course.instructor && (
+            <div className="flex items-center gap-2">
+              <img 
+                src={course.instructor.avatar_url || '/placeholder.svg'} 
+                alt={course.instructor.full_name || 'Instructor'}
+                className="w-6 h-6 object-cover"
+              />
+              <span className="text-sm text-muted-foreground">
+                {course.instructor.full_name}
+              </span>
+            </div>
+          )}
 
           {/* Stats */}
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <Star className="w-4 h-4 text-foreground fill-foreground" />
-              <span className="font-medium text-foreground">{course.rating}</span>
-              <span>({course.reviewCount.toLocaleString()})</span>
+              <span className="font-medium text-foreground">{course.average_rating}</span>
+              <span>({course.review_count.toLocaleString()})</span>
             </div>
             <div className="flex items-center gap-1">
               <Users className="w-4 h-4" />
-              <span>{(course.studentsCount / 1000).toFixed(0)}K</span>
+              <span>
+                {course.students_count >= 1000 
+                  ? `${(course.students_count / 1000).toFixed(0)}K` 
+                  : course.students_count}
+              </span>
             </div>
           </div>
 
@@ -95,33 +100,23 @@ const CourseCard = ({ course, showProgress = false }: CourseCardProps) => {
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <Clock className="w-4 h-4" />
-              <span>{course.duration}</span>
+              <span>{course.duration || '3 months'}</span>
             </div>
             <div className="flex items-center gap-1">
               <BookOpen className="w-4 h-4" />
-              <span>{course.lessonsCount} lessons</span>
+              <span>{course.lessons_count} lessons</span>
             </div>
           </div>
 
           {/* Progress (for dashboard) */}
-          {showProgress && course.progress !== undefined && (
-            <div className="space-y-2 pt-2 border-t border-border">
-              <div className="flex items-center justify-between text-sm">
+          {showProgress && (
+            <div className="pt-2 border-t border-border">
+              <div className="flex justify-between text-sm mb-2">
                 <span className="text-muted-foreground">Progress</span>
-                <span className="font-medium">{course.progress}%</span>
+                <span className="text-primary font-medium">{progress}%</span>
               </div>
-              <Progress value={course.progress} className="h-2" />
-              {course.lastWatched && (
-                <p className="text-xs text-muted-foreground">Last watched: {course.lastWatched}</p>
-              )}
+              <Progress value={progress} className="h-2" />
             </div>
-          )}
-
-          {/* CTA */}
-          {!showProgress && (
-            <Button className="w-full mt-2">
-              Enroll Now
-            </Button>
           )}
         </div>
       </div>
