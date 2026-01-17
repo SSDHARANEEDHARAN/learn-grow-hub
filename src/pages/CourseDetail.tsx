@@ -1,26 +1,88 @@
-import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import VideoPlayer from '@/components/VideoPlayer';
 import CourseContent from '@/components/CourseContent';
 import CommentsSection from '@/components/CommentsSection';
 import QuizComponent from '@/components/QuizComponent';
-import { mockCourses } from '@/data/mockData';
+import ReviewsSection from '@/components/ReviewsSection';
+import PaymentButton from '@/components/PaymentButton';
+import RewardPointsDisplay from '@/components/RewardPointsDisplay';
+import { useCourse } from '@/hooks/useCourses';
+import { useEnrollment } from '@/hooks/useEnrollment';
+import { useLessonProgress } from '@/hooks/useLessonProgress';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { 
   Star, Clock, BookOpen, Users, Award, CheckCircle, 
-  Play, FileText, Download, Share2, Heart, ShoppingCart
+  Play, FileText, Download, Share2, Heart, Lock
 } from 'lucide-react';
 
 const CourseDetail = () => {
   const { id } = useParams();
-  const [activeLesson, setActiveLesson] = useState('l1');
-  const [isEnrolled, setIsEnrolled] = useState(false);
-  
-  const course = mockCourses.find(c => c.id === id) || mockCourses[0];
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { data: course, isLoading } = useCourse(id || '');
+  const { isEnrolled, hasPaid, isLoading: enrollmentLoading } = useEnrollment(id || '');
+  const { progress, completedLessons } = useLessonProgress(id || '');
+  const [activeLesson, setActiveLesson] = useState<string | null>(null);
+
+  // Calculate progress percentage
+  const totalLessons = course?.lessons_count || 0;
+  const progressPercent = totalLessons > 0 
+    ? Math.round((completedLessons.length / totalLessons) * 100) 
+    : 0;
+
+  useEffect(() => {
+    // Set first lesson as active when course loads
+    if (course?.modules?.[0]?.lessons?.[0]) {
+      setActiveLesson(course.modules[0].lessons[0].id);
+    }
+  }, [course]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="pt-20 container mx-auto px-4">
+          <div className="grid lg:grid-cols-3 gap-8 py-12">
+            <div className="lg:col-span-2 space-y-6">
+              <Skeleton className="h-8 w-32" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="aspect-video w-full" />
+            </div>
+            <div>
+              <Skeleton className="h-96 w-full" />
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!course) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="pt-20 container mx-auto px-4 text-center py-20">
+          <h1 className="text-2xl font-bold mb-4">Course not found</h1>
+          <p className="text-muted-foreground mb-6">This course doesn't exist or has been removed.</p>
+          <Link to="/courses">
+            <Button variant="hero">Browse Courses</Button>
+          </Link>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  const canAccessCourse = hasPaid || isEnrolled;
 
   return (
     <div className="min-h-screen bg-background">
@@ -34,21 +96,25 @@ const CourseDetail = () => {
               {/* Course Info */}
               <div className="lg:col-span-2 space-y-6">
                 <div className="flex flex-wrap items-center gap-3">
-                  <span className="px-3 py-1 rounded-lg bg-primary/20 text-primary text-sm font-semibold">
-                    {course.category}
-                  </span>
-                  {course.isBestseller && (
-                    <span className="px-3 py-1 rounded-lg bg-accent/20 text-accent text-sm font-semibold">
+                  {course.category && (
+                    <span className="px-3 py-1 bg-primary/20 text-primary text-sm font-semibold">
+                      {course.category}
+                    </span>
+                  )}
+                  {course.is_bestseller && (
+                    <span className="px-3 py-1 bg-foreground/20 text-foreground text-sm font-semibold">
                       BESTSELLER
                     </span>
                   )}
-                  <span className={`px-3 py-1 rounded-lg text-sm font-semibold ${
-                    course.level === 'Beginner' ? 'bg-success/20 text-success' :
-                    course.level === 'Intermediate' ? 'bg-warning/20 text-warning' :
-                    'bg-destructive/20 text-destructive'
-                  }`}>
-                    {course.level}
-                  </span>
+                  {course.level && (
+                    <span className={`px-3 py-1 text-sm font-semibold ${
+                      course.level === 'beginner' ? 'bg-secondary text-secondary-foreground' :
+                      course.level === 'intermediate' ? 'bg-secondary text-secondary-foreground' :
+                      'bg-secondary text-secondary-foreground'
+                    }`}>
+                      {course.level.charAt(0).toUpperCase() + course.level.slice(1)}
+                    </span>
+                  )}
                 </div>
 
                 <h1 className="font-display text-3xl md:text-4xl font-bold">
@@ -61,36 +127,38 @@ const CourseDetail = () => {
 
                 <div className="flex flex-wrap items-center gap-6 text-sm">
                   <div className="flex items-center gap-1">
-                    <Star className="w-5 h-5 text-warning fill-warning" />
-                    <span className="font-bold">{course.rating}</span>
-                    <span className="text-muted-foreground">({course.reviewCount.toLocaleString()} reviews)</span>
+                    <Star className="w-5 h-5 text-foreground fill-foreground" />
+                    <span className="font-bold">{course.average_rating}</span>
+                    <span className="text-muted-foreground">({course.review_count.toLocaleString()} reviews)</span>
                   </div>
                   <div className="flex items-center gap-1 text-muted-foreground">
                     <Users className="w-5 h-5" />
-                    <span>{course.studentsCount.toLocaleString()} students</span>
+                    <span>{course.students_count.toLocaleString()} students</span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                  <img 
-                    src={course.instructorAvatar}
-                    alt={course.instructor}
-                    className="w-12 h-12 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Created by</p>
-                    <p className="font-semibold">{course.instructor}</p>
+                {course.instructor && (
+                  <div className="flex items-center gap-4">
+                    <img 
+                      src={course.instructor.avatar_url || '/placeholder.svg'}
+                      alt={course.instructor.full_name || 'Instructor'}
+                      className="w-12 h-12 object-cover"
+                    />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Created by</p>
+                      <p className="font-semibold">{course.instructor.full_name}</p>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4" />
-                    <span>{course.duration} total</span>
+                    <span>{course.duration || '3 months'} total</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <BookOpen className="w-4 h-4" />
-                    <span>{course.lessonsCount} lessons</span>
+                    <span>{course.lessons_count} lessons</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Award className="w-4 h-4" />
@@ -101,36 +169,37 @@ const CourseDetail = () => {
 
               {/* Pricing Card */}
               <div className="lg:col-span-1">
-                <div className="glass-card rounded-2xl p-6 sticky top-24 space-y-6">
-                  <div className="aspect-video rounded-xl overflow-hidden">
+                <div className="border border-border bg-card p-6 sticky top-24 space-y-6">
+                  <div className="aspect-video overflow-hidden">
                     <img 
-                      src={course.thumbnail}
+                      src={course.thumbnail_url || '/placeholder.svg'}
                       alt={course.title}
                       className="w-full h-full object-cover"
                     />
                   </div>
 
                   <div className="flex items-baseline gap-3">
-                    <span className="font-display font-bold text-4xl">${course.price}</span>
-                    {course.originalPrice && (
+                    <span className="font-display font-bold text-4xl">${course.price || 0}</span>
+                    {course.original_price && course.original_price > (course.price || 0) && (
                       <>
-                        <span className="text-xl text-muted-foreground line-through">${course.originalPrice}</span>
-                        <span className="px-2 py-1 rounded-lg bg-accent/20 text-accent text-sm font-semibold">
-                          {Math.round((1 - course.price / course.originalPrice) * 100)}% OFF
+                        <span className="text-xl text-muted-foreground line-through">${course.original_price}</span>
+                        <span className="px-2 py-1 bg-foreground/20 text-foreground text-sm font-semibold">
+                          {Math.round((1 - (course.price || 0) / course.original_price) * 100)}% OFF
                         </span>
                       </>
                     )}
                   </div>
 
-                  {isEnrolled ? (
+                  {canAccessCourse ? (
                     <div className="space-y-4">
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                           <span>Your Progress</span>
-                          <span className="text-primary font-semibold">{course.progress || 0}%</span>
+                          <span className="text-primary font-semibold">{progressPercent}%</span>
                         </div>
-                        <Progress value={course.progress || 0} className="h-2" />
+                        <Progress value={progressPercent} className="h-2" />
                       </div>
+                      <RewardPointsDisplay variant="full" />
                       <Button variant="hero" className="w-full gap-2" size="lg">
                         <Play className="w-5 h-5" />
                         Continue Learning
@@ -138,15 +207,16 @@ const CourseDetail = () => {
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      <Button 
-                        variant="hero" 
-                        className="w-full gap-2" 
-                        size="lg"
-                        onClick={() => setIsEnrolled(true)}
-                      >
-                        <ShoppingCart className="w-5 h-5" />
-                        Enroll Now
-                      </Button>
+                      <PaymentButton 
+                        courseId={course.id}
+                        courseTitle={course.title}
+                        price={course.price || 0}
+                        onPaymentComplete={() => window.location.reload()}
+                      />
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground justify-center">
+                        <Lock className="w-4 h-4" />
+                        <span>Payment required to access course content</span>
+                      </div>
                       <Button variant="outline" className="w-full gap-2" size="lg">
                         <Heart className="w-5 h-5" />
                         Add to Wishlist
@@ -154,11 +224,11 @@ const CourseDetail = () => {
                     </div>
                   )}
 
-                  <div className="space-y-3 pt-4 border-t border-border/50">
+                  <div className="space-y-3 pt-4 border-t border-border">
                     <p className="font-semibold text-sm">This course includes:</p>
                     {[
-                      { icon: Play, text: `${course.duration} on-demand video` },
-                      { icon: FileText, text: '25 downloadable resources' },
+                      { icon: Play, text: `${course.duration || '3 months'} of daily videos` },
+                      { icon: FileText, text: 'Weekly tests with rewards' },
                       { icon: Award, text: 'Certificate of completion' },
                       { icon: Clock, text: 'Full lifetime access' },
                     ].map((item, index) => (
@@ -190,18 +260,37 @@ const CourseDetail = () => {
           <div className="container mx-auto px-4">
             <div className="grid lg:grid-cols-3 gap-8">
               <div className="lg:col-span-2">
-                {/* Video Player */}
-                <div className="mb-8">
-                  <VideoPlayer thumbnail={course.thumbnail} title={course.title} />
-                </div>
+                {/* Video Player - Only show if enrolled */}
+                {canAccessCourse ? (
+                  <div className="mb-8">
+                    <VideoPlayer 
+                      thumbnail={course.thumbnail_url || '/placeholder.svg'} 
+                      title={course.title} 
+                    />
+                  </div>
+                ) : (
+                  <div className="mb-8 aspect-video bg-secondary flex items-center justify-center border border-border">
+                    <div className="text-center space-y-4">
+                      <Lock className="w-16 h-16 text-muted-foreground mx-auto" />
+                      <h3 className="text-xl font-semibold">Purchase Required</h3>
+                      <p className="text-muted-foreground max-w-md">
+                        Purchase this course to access all video lessons, weekly tests, and earn reward points.
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 {/* Tabs */}
                 <Tabs defaultValue="overview" className="space-y-6">
                   <TabsList className="bg-secondary/50 p-1">
                     <TabsTrigger value="overview">Overview</TabsTrigger>
-                    <TabsTrigger value="materials">Materials</TabsTrigger>
-                    <TabsTrigger value="quiz">Quiz</TabsTrigger>
-                    <TabsTrigger value="discussion">Discussion</TabsTrigger>
+                    <TabsTrigger value="reviews">Reviews</TabsTrigger>
+                    {canAccessCourse && (
+                      <>
+                        <TabsTrigger value="quiz">Quiz</TabsTrigger>
+                        <TabsTrigger value="discussion">Discussion</TabsTrigger>
+                      </>
+                    )}
                   </TabsList>
 
                   <TabsContent value="overview" className="space-y-6">
@@ -209,15 +298,15 @@ const CourseDetail = () => {
                       <h3 className="font-display font-semibold text-xl mb-4">What you'll learn</h3>
                       <div className="grid md:grid-cols-2 gap-3">
                         {[
-                          'Build 16+ real-world projects',
-                          'Master HTML, CSS, and JavaScript',
-                          'Learn React and modern frameworks',
-                          'Understand backend development',
-                          'Deploy applications to production',
-                          'Best practices and clean code',
+                          '90 days of structured video content',
+                          'Weekly tests to track your progress',
+                          'Earn reward points as you learn',
+                          'Certificate upon completion',
+                          'Lifetime access to all materials',
+                          'Expert instructor support',
                         ].map((item, index) => (
                           <div key={index} className="flex items-start gap-2">
-                            <CheckCircle className="w-5 h-5 text-success shrink-0 mt-0.5" />
+                            <CheckCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                             <span className="text-sm">{item}</span>
                           </div>
                         ))}
@@ -228,53 +317,27 @@ const CourseDetail = () => {
                       <h3 className="font-display font-semibold text-xl mb-4">Description</h3>
                       <div className="prose prose-invert max-w-none">
                         <p className="text-muted-foreground">
-                          Welcome to the most comprehensive web development course on the internet! 
-                          This course covers everything from HTML basics to advanced React patterns 
-                          and backend development. Whether you're a complete beginner or looking to 
-                          level up your skills, this course has something for everyone.
-                        </p>
-                        <p className="text-muted-foreground mt-4">
-                          By the end of this course, you'll have built real projects that you can 
-                          add to your portfolio, and you'll be ready to apply for junior developer 
-                          positions or take on freelance work.
+                          {course.description || 'No description available.'}
                         </p>
                       </div>
                     </div>
                   </TabsContent>
 
-                  <TabsContent value="materials">
-                    <div className="space-y-4">
-                      <h3 className="font-display font-semibold text-xl mb-4">Course Materials</h3>
-                      {[
-                        { name: 'HTML & CSS Cheat Sheet.pdf', size: '2.4 MB' },
-                        { name: 'JavaScript ES6+ Guide.pdf', size: '3.1 MB' },
-                        { name: 'React Best Practices.pdf', size: '1.8 MB' },
-                        { name: 'Project Starter Files.zip', size: '12.5 MB' },
-                      ].map((file, index) => (
-                        <div key={index} className="flex items-center justify-between p-4 bg-secondary/50 rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <FileText className="w-5 h-5 text-primary" />
-                            <span className="font-medium">{file.name}</span>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <span className="text-sm text-muted-foreground">{file.size}</span>
-                            <Button variant="outline" size="sm" className="gap-2">
-                              <Download className="w-4 h-4" />
-                              Download
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                  <TabsContent value="reviews">
+                    <ReviewsSection courseId={course.id} />
                   </TabsContent>
 
-                  <TabsContent value="quiz">
-                    <QuizComponent />
-                  </TabsContent>
+                  {canAccessCourse && (
+                    <>
+                      <TabsContent value="quiz">
+                        <QuizComponent />
+                      </TabsContent>
 
-                  <TabsContent value="discussion">
-                    <CommentsSection />
-                  </TabsContent>
+                      <TabsContent value="discussion">
+                        <CommentsSection />
+                      </TabsContent>
+                    </>
+                  )}
                 </Tabs>
               </div>
 
@@ -282,8 +345,11 @@ const CourseDetail = () => {
               <div className="lg:col-span-1">
                 <div className="sticky top-24">
                   <CourseContent 
+                    courseId={course.id}
+                    modules={course.modules || []}
                     onSelectLesson={setActiveLesson}
-                    activeLesson={activeLesson}
+                    activeLesson={activeLesson || ''}
+                    isLocked={!canAccessCourse}
                   />
                 </div>
               </div>

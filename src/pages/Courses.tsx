@@ -2,35 +2,39 @@ import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import CourseCard from '@/components/CourseCard';
-import { mockCourses, categories } from '@/data/mockData';
+import { useCourses, useCategories } from '@/hooks/useCourses';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
 
 const Courses = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All Courses');
-  const [priceRange, setPriceRange] = useState([0, 200]);
+  const [priceRange, setPriceRange] = useState([0, 500]);
   const [sortBy, setSortBy] = useState('popular');
   const [showFilters, setShowFilters] = useState(false);
 
-  const filteredCourses = mockCourses.filter(course => {
+  const { data: courses, isLoading } = useCourses();
+  const { data: categories } = useCategories();
+
+  const filteredCourses = (courses || []).filter(course => {
     const matchesSearch = course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      course.description.toLowerCase().includes(searchQuery.toLowerCase());
+      (course.description?.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesCategory = activeCategory === 'All Courses' || course.category === activeCategory;
-    const matchesPrice = course.price >= priceRange[0] && course.price <= priceRange[1];
+    const matchesPrice = (course.price || 0) >= priceRange[0] && (course.price || 0) <= priceRange[1];
     return matchesSearch && matchesCategory && matchesPrice;
   });
 
   const sortedCourses = [...filteredCourses].sort((a, b) => {
     switch (sortBy) {
-      case 'price-low': return a.price - b.price;
-      case 'price-high': return b.price - a.price;
-      case 'rating': return b.rating - a.rating;
-      case 'newest': return b.isNew ? 1 : -1;
-      default: return b.studentsCount - a.studentsCount;
+      case 'price-low': return (a.price || 0) - (b.price || 0);
+      case 'price-high': return (b.price || 0) - (a.price || 0);
+      case 'rating': return b.average_rating - a.average_rating;
+      case 'newest': return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      default: return b.students_count - a.students_count;
     }
   });
 
@@ -89,7 +93,7 @@ const Courses = () => {
 
           {/* Filters Panel */}
           {showFilters && (
-            <div className="glass-card rounded-xl p-6 mb-8 animate-fade-in">
+            <div className="border border-border bg-card p-6 mb-8 animate-fade-in">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="font-display font-semibold text-lg">Filters</h3>
                 <Button variant="ghost" size="icon" onClick={() => setShowFilters(false)}>
@@ -103,7 +107,7 @@ const Courses = () => {
                   <Slider
                     value={priceRange}
                     onValueChange={setPriceRange}
-                    max={200}
+                    max={500}
                     step={10}
                     className="mb-2"
                   />
@@ -128,8 +132,8 @@ const Courses = () => {
           )}
 
           {/* Category Tabs */}
-          <div className="flex flex-wrap gap-2 mb-8 pb-4 border-b border-border/50">
-            {categories.map((category) => (
+          <div className="flex flex-wrap gap-2 mb-8 pb-4 border-b border-border">
+            {(categories || ['All Courses']).map((category) => (
               <Button
                 key={category}
                 variant={activeCategory === category ? 'hero' : 'ghost'}
@@ -146,30 +150,49 @@ const Courses = () => {
             Showing {sortedCourses.length} courses
           </p>
 
-          {/* Course Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sortedCourses.map((course, index) => (
-              <div 
-                key={course.id}
-                className="animate-fade-in"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <CourseCard course={course} />
-              </div>
-            ))}
-          </div>
-
-          {sortedCourses.length === 0 && (
-            <div className="text-center py-20">
-              <p className="text-xl text-muted-foreground mb-4">No courses found</p>
-              <Button variant="outline" onClick={() => {
-                setSearchQuery('');
-                setActiveCategory('All Courses');
-                setPriceRange([0, 200]);
-              }}>
-                Clear Filters
-              </Button>
+          {/* Loading State */}
+          {isLoading ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="border border-border bg-card">
+                  <Skeleton className="aspect-video w-full" />
+                  <div className="p-5 space-y-4">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-6 w-full" />
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-4 w-full" />
+                  </div>
+                </div>
+              ))}
             </div>
+          ) : (
+            <>
+              {/* Course Grid */}
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {sortedCourses.map((course, index) => (
+                  <div 
+                    key={course.id}
+                    className="animate-fade-in"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <CourseCard course={course} />
+                  </div>
+                ))}
+              </div>
+
+              {sortedCourses.length === 0 && (
+                <div className="text-center py-20">
+                  <p className="text-xl text-muted-foreground mb-4">No courses found</p>
+                  <Button variant="outline" onClick={() => {
+                    setSearchQuery('');
+                    setActiveCategory('All Courses');
+                    setPriceRange([0, 500]);
+                  }}>
+                    Clear Filters
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </main>
