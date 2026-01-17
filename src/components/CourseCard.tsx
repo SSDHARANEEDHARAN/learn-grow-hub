@@ -12,7 +12,7 @@ interface CourseCardProps {
 const CourseCard = ({ course, showProgress = false }: CourseCardProps) => {
   return (
     <Link to={`/course/${course.id}`}>
-      <div className="group glass-card rounded-2xl overflow-hidden hover-lift cursor-pointer">
+      <div className="group border border-border bg-card overflow-hidden hover-lift cursor-pointer">
         {/* Thumbnail */}
         <div className="relative overflow-hidden">
           <img 
@@ -25,12 +25,12 @@ const CourseCard = ({ course, showProgress = false }: CourseCardProps) => {
           {/* Badges */}
           <div className="absolute top-3 left-3 flex gap-2">
             {course.isBestseller && (
-              <span className="px-2 py-1 rounded-md bg-primary text-primary-foreground text-xs font-bold">
+              <span className="px-2 py-1 bg-primary text-primary-foreground text-xs font-bold">
                 BESTSELLER
               </span>
             )}
             {course.isNew && (
-              <span className="px-2 py-1 rounded-md bg-accent text-accent-foreground text-xs font-bold">
+              <span className="px-2 py-1 bg-foreground text-background text-xs font-bold">
                 NEW
               </span>
             )}
@@ -38,8 +38,8 @@ const CourseCard = ({ course, showProgress = false }: CourseCardProps) => {
 
           {/* Price */}
           <div className="absolute bottom-3 right-3">
-            <div className="glass-card px-3 py-1 rounded-lg">
-              <span className="font-display font-bold text-primary">${course.price}</span>
+            <div className="border border-border bg-card px-3 py-1">
+              <span className="font-display font-bold">${course.price}</span>
               {course.originalPrice && (
                 <span className="text-xs text-muted-foreground line-through ml-1">${course.originalPrice}</span>
               )}
@@ -51,20 +51,20 @@ const CourseCard = ({ course, showProgress = false }: CourseCardProps) => {
         <div className="p-5 space-y-4">
           {/* Category & Level */}
           <div className="flex items-center gap-2 text-xs">
-            <span className="px-2 py-1 rounded-md bg-secondary text-secondary-foreground font-medium">
+            <span className="px-2 py-1 bg-secondary text-secondary-foreground font-medium">
               {course.category}
             </span>
-            <span className={`px-2 py-1 rounded-md font-medium ${
-              course.level === 'Beginner' ? 'bg-success/20 text-success' :
-              course.level === 'Intermediate' ? 'bg-warning/20 text-warning' :
-              'bg-destructive/20 text-destructive'
+            <span className={`px-2 py-1 font-medium ${
+              course.level === 'Beginner' ? 'bg-secondary text-secondary-foreground' :
+              course.level === 'Intermediate' ? 'bg-secondary text-secondary-foreground' :
+              'bg-secondary text-secondary-foreground'
             }`}>
               {course.level}
             </span>
           </div>
 
           {/* Title */}
-          <h3 className="font-display font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors">
+          <h3 className="font-display font-semibold text-lg line-clamp-2 group-hover:underline transition-all">
             {course.title}
           </h3>
 
@@ -73,7 +73,7 @@ const CourseCard = ({ course, showProgress = false }: CourseCardProps) => {
             <img 
               src={course.instructorAvatar} 
               alt={course.instructor}
-              className="w-6 h-6 rounded-full object-cover"
+              className="w-6 h-6 object-cover"
             />
             <span className="text-sm text-muted-foreground">{course.instructor}</span>
           </div>
@@ -81,7 +81,7 @@ const CourseCard = ({ course, showProgress = false }: CourseCardProps) => {
           {/* Stats */}
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
-              <Star className="w-4 h-4 text-warning fill-warning" />
+              <Star className="w-4 h-4 text-foreground fill-foreground" />
               <span className="font-medium text-foreground">{course.rating}</span>
               <span>({course.reviewCount.toLocaleString()})</span>
             </div>
@@ -105,10 +105,10 @@ const CourseCard = ({ course, showProgress = false }: CourseCardProps) => {
 
           {/* Progress (for dashboard) */}
           {showProgress && course.progress !== undefined && (
-            <div className="space-y-2 pt-2 border-t border-border/50">
+            <div className="space-y-2 pt-2 border-t border-border">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Progress</span>
-                <span className="font-medium text-primary">{course.progress}%</span>
+                <span className="font-medium">{course.progress}%</span>
               </div>
               <Progress value={course.progress} className="h-2" />
               {course.lastWatched && (
@@ -119,7 +119,7 @@ const CourseCard = ({ course, showProgress = false }: CourseCardProps) => {
 
           {/* CTA */}
           {!showProgress && (
-            <Button variant="hero" className="w-full mt-2">
+            <Button className="w-full mt-2">
               Enroll Now
             </Button>
           )}
