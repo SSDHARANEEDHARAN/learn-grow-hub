@@ -4,6 +4,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import StudentAnalytics from '@/components/StudentAnalytics';
 import MarksheetView from '@/components/MarksheetView';
+import QuizBuilder from '@/components/QuizBuilder';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -64,6 +65,7 @@ const InstructorDashboard = () => {
   const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const [marksheetOpen, setMarksheetOpen] = useState(false);
+  const [quizBuilderOpen, setQuizBuilderOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [newCourse, setNewCourse] = useState({
     title: '',
@@ -184,6 +186,11 @@ const InstructorDashboard = () => {
   const openMarksheet = (course: Course) => {
     setSelectedCourse(course);
     setMarksheetOpen(true);
+  };
+
+  const openQuizBuilder = (course: Course) => {
+    setSelectedCourse(course);
+    setQuizBuilderOpen(true);
   };
 
   const confirmDelete = (course: Course) => {
@@ -455,7 +462,29 @@ const InstructorDashboard = () => {
                 <h3 className="font-semibold">Create Quiz</h3>
               </div>
               <p className="text-sm text-muted-foreground mb-4">Build interactive quizzes for students</p>
-              <Button variant="outline" className="w-full">Create</Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="w-full">Create</Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Select Course</DialogTitle>
+                    <DialogDescription>Choose a course to create a quiz for</DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-2 mt-4">
+                    {courses.map((course) => (
+                      <Button
+                        key={course.id}
+                        variant="outline"
+                        className="w-full justify-start"
+                        onClick={() => openQuizBuilder(course)}
+                      >
+                        {course.title}
+                      </Button>
+                    ))}
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </div>
@@ -476,6 +505,16 @@ const InstructorDashboard = () => {
         <MarksheetView
           isOpen={marksheetOpen}
           onClose={() => setMarksheetOpen(false)}
+          courseId={selectedCourse.id}
+          courseTitle={selectedCourse.title}
+        />
+      )}
+
+      {/* Quiz Builder Dialog */}
+      {selectedCourse && (
+        <QuizBuilder
+          isOpen={quizBuilderOpen}
+          onClose={() => setQuizBuilderOpen(false)}
           courseId={selectedCourse.id}
           courseTitle={selectedCourse.title}
         />
