@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import StudentAnalytics from '@/components/StudentAnalytics';
+import MarksheetView from '@/components/MarksheetView';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -17,7 +19,8 @@ import {
   BarChart3,
   Video,
   FileText,
-  HelpCircle
+  HelpCircle,
+  AlertTriangle
 } from 'lucide-react';
 import {
   Dialog,
@@ -25,51 +28,43 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
 
-// Mock data for instructor
-const mockInstructorStats = {
-  totalCourses: 5,
-  totalStudents: 12453,
-  totalRevenue: 45890,
-  avgRating: 4.8,
-};
-
-const mockInstructorCourses = [
-  {
-    id: '1',
-    title: 'Complete Web Development Bootcamp',
-    students: 8234,
-    revenue: 28500,
-    rating: 4.9,
-    status: 'published',
-    thumbnail: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=300&h=200&fit=crop',
-  },
-  {
-    id: '2',
-    title: 'Advanced React Patterns',
-    students: 3219,
-    revenue: 12890,
-    rating: 4.7,
-    status: 'published',
-    thumbnail: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=300&h=200&fit=crop',
-  },
-  {
-    id: '3',
-    title: 'Node.js Masterclass',
-    students: 1000,
-    revenue: 4500,
-    rating: 4.8,
-    status: 'draft',
-    thumbnail: 'https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=300&h=200&fit=crop',
-  },
-];
+interface Course {
+  id: string;
+  title: string;
+  thumbnail_url: string | null;
+  is_published: boolean | null;
+  price: number | null;
+  category: string | null;
+  students_count?: number;
+  revenue?: number;
+}
 
 const InstructorDashboard = () => {
-  const [courses, setCourses] = useState(mockInstructorCourses);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
+  const [analyticsOpen, setAnalyticsOpen] = useState(false);
+  const [marksheetOpen, setMarksheetOpen] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [newCourse, setNewCourse] = useState({
     title: '',
     description: '',
@@ -79,28 +74,126 @@ const InstructorDashboard = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const handleCreateCourse = (e: React.FormEvent) => {
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const fetchCourses = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('courses')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Get enrollment counts for each course
+      const coursesWithStats = await Promise.all(
+        (data || []).map(async (course) => {
+          const { count } = await supabase
+            .from('enrollments')
+            .select('*', { count: 'exact', head: true })
+            .eq('course_id', course.id);
+
+          return {
+            ...course,
+            students_count: count || 0,
+            revenue: (count || 0) * (course.price || 0),
+          };
+        })
+      );
+
+      setCourses(coursesWithStats);
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCreateCourse = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const course = {
-      id: Date.now().toString(),
-      title: newCourse.title,
-      students: 0,
-      revenue: 0,
-      rating: 0,
-      status: 'draft' as const,
-      thumbnail: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=300&h=200&fit=crop',
-    };
-    
-    setCourses([course, ...courses]);
-    setNewCourse({ title: '', description: '', price: '', category: '' });
-    setIsCreateDialogOpen(false);
-    
-    toast({
-      title: 'Course Created!',
-      description: 'Your new course has been created as a draft.',
-    });
+    try {
+      const { data, error } = await supabase
+        .from('courses')
+        .insert({
+          title: newCourse.title,
+          description: newCourse.description,
+          price: parseFloat(newCourse.price) || 0,
+          category: newCourse.category,
+          is_published: false,
+          duration: '3 months',
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setCourses([{ ...data, students_count: 0, revenue: 0 }, ...courses]);
+      setNewCourse({ title: '', description: '', price: '', category: '' });
+      setIsCreateDialogOpen(false);
+      
+      toast({
+        title: 'Course Created!',
+        description: 'Your new course has been created as a draft.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
   };
+
+  const handleDeleteCourse = async () => {
+    if (!courseToDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from('courses')
+        .delete()
+        .eq('id', courseToDelete.id);
+
+      if (error) throw error;
+
+      setCourses(courses.filter(c => c.id !== courseToDelete.id));
+      setDeleteDialogOpen(false);
+      setCourseToDelete(null);
+
+      toast({
+        title: 'Course Deleted',
+        description: 'The course has been permanently deleted.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const openAnalytics = (course: Course) => {
+    setSelectedCourse(course);
+    setAnalyticsOpen(true);
+  };
+
+  const openMarksheet = (course: Course) => {
+    setSelectedCourse(course);
+    setMarksheetOpen(true);
+  };
+
+  const confirmDelete = (course: Course) => {
+    setCourseToDelete(course);
+    setDeleteDialogOpen(true);
+  };
+
+  // Calculate totals
+  const totalStudents = courses.reduce((acc, c) => acc + (c.students_count || 0), 0);
+  const totalRevenue = courses.reduce((acc, c) => acc + (c.revenue || 0), 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -125,6 +218,9 @@ const InstructorDashboard = () => {
               <DialogContent className="max-w-md">
                 <DialogHeader>
                   <DialogTitle>Create New Course</DialogTitle>
+                  <DialogDescription>
+                    Fill in the details to create a new course
+                  </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleCreateCourse} className="space-y-4 mt-4">
                   <div className="space-y-2">
@@ -147,12 +243,12 @@ const InstructorDashboard = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Price ($)</label>
+                      <label className="text-sm font-medium">Price (₹)</label>
                       <Input
                         type="number"
                         value={newCourse.price}
                         onChange={(e) => setNewCourse({ ...newCourse, price: e.target.value })}
-                        placeholder="99.99"
+                        placeholder="4999"
                         required
                       />
                     </div>
@@ -165,10 +261,12 @@ const InstructorDashboard = () => {
                         required
                       >
                         <option value="">Select</option>
-                        <option value="Development">Development</option>
-                        <option value="Design">Design</option>
-                        <option value="Data Science">Data Science</option>
-                        <option value="Marketing">Marketing</option>
+                        <option value="Embedded Systems">Embedded Systems</option>
+                        <option value="IoT">IoT</option>
+                        <option value="Robotics">Robotics</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Programming">Programming</option>
+                        <option value="AI & ML">AI & ML</option>
                       </select>
                     </div>
                   </div>
@@ -187,7 +285,7 @@ const InstructorDashboard = () => {
                 </div>
                 <span className="text-sm text-muted-foreground">Total Courses</span>
               </div>
-              <p className="font-display text-3xl font-bold">{mockInstructorStats.totalCourses}</p>
+              <p className="font-display text-3xl font-bold">{courses.length}</p>
             </div>
 
             <div className="border border-border bg-card p-6">
@@ -197,7 +295,7 @@ const InstructorDashboard = () => {
                 </div>
                 <span className="text-sm text-muted-foreground">Total Students</span>
               </div>
-              <p className="font-display text-3xl font-bold">{mockInstructorStats.totalStudents.toLocaleString()}</p>
+              <p className="font-display text-3xl font-bold">{totalStudents.toLocaleString()}</p>
             </div>
 
             <div className="border border-border bg-card p-6">
@@ -207,7 +305,7 @@ const InstructorDashboard = () => {
                 </div>
                 <span className="text-sm text-muted-foreground">Total Revenue</span>
               </div>
-              <p className="font-display text-3xl font-bold">${mockInstructorStats.totalRevenue.toLocaleString()}</p>
+              <p className="font-display text-3xl font-bold">₹{totalRevenue.toLocaleString()}</p>
             </div>
 
             <div className="border border-border bg-card p-6">
@@ -215,9 +313,9 @@ const InstructorDashboard = () => {
                 <div className="w-10 h-10 bg-primary/10 flex items-center justify-center">
                   <TrendingUp className="w-5 h-5 text-primary" />
                 </div>
-                <span className="text-sm text-muted-foreground">Avg Rating</span>
+                <span className="text-sm text-muted-foreground">Published</span>
               </div>
-              <p className="font-display text-3xl font-bold">{mockInstructorStats.avgRating}</p>
+              <p className="font-display text-3xl font-bold">{courses.filter(c => c.is_published).length}</p>
             </div>
           </div>
 
@@ -226,70 +324,103 @@ const InstructorDashboard = () => {
             <div className="p-6 border-b border-border">
               <h2 className="font-display text-xl font-semibold">Your Courses</h2>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Course</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Students</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Revenue</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Rating</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Status</th>
-                    <th className="px-6 py-4 text-right text-sm font-medium text-muted-foreground">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {courses.map((course) => (
-                    <tr key={course.id} className="border-b border-border last:border-0">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-4">
-                          <img 
-                            src={course.thumbnail} 
-                            alt={course.title}
-                            className="w-16 h-12 object-cover"
-                          />
-                          <span className="font-medium">{course.title}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-muted-foreground">
-                        {course.students.toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 text-muted-foreground">
-                        ${course.revenue.toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 text-muted-foreground">
-                        {course.rating > 0 ? `⭐ ${course.rating}` : '-'}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-1 text-xs font-medium ${
-                          course.status === 'published' 
-                            ? 'bg-primary text-primary-foreground' 
-                            : 'bg-muted text-muted-foreground'
-                        }`}>
-                          {course.status.toUpperCase()}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button variant="ghost" size="icon">
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon">
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon">
-                            <BarChart3 className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="text-destructive">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </td>
+            
+            {isLoading ? (
+              <div className="p-6 space-y-4">
+                {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full" />)}
+              </div>
+            ) : courses.length === 0 ? (
+              <div className="p-12 text-center">
+                <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">No courses yet. Create your first course!</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Course</th>
+                      <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Students</th>
+                      <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Revenue</th>
+                      <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Price</th>
+                      <th className="px-6 py-4 text-left text-sm font-medium text-muted-foreground">Status</th>
+                      <th className="px-6 py-4 text-right text-sm font-medium text-muted-foreground">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {courses.map((course) => (
+                      <tr key={course.id} className="border-b border-border last:border-0">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-4">
+                            <img 
+                              src={course.thumbnail_url || '/placeholder.svg'} 
+                              alt={course.title}
+                              className="w-16 h-12 object-cover"
+                            />
+                            <div>
+                              <span className="font-medium block">{course.title}</span>
+                              <span className="text-xs text-muted-foreground">{course.category}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-muted-foreground">
+                          {(course.students_count || 0).toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4 text-muted-foreground">
+                          ₹{(course.revenue || 0).toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4 text-muted-foreground">
+                          ₹{(course.price || 0).toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-1 text-xs font-medium ${
+                            course.is_published 
+                              ? 'bg-primary text-primary-foreground' 
+                              : 'bg-muted text-muted-foreground'
+                          }`}>
+                            {course.is_published ? 'PUBLISHED' : 'DRAFT'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              title="View Marksheet"
+                              onClick={() => openMarksheet(course)}
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                            <Link to={`/course/${course.id}`}>
+                              <Button variant="ghost" size="icon" title="Edit Course">
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                            </Link>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
+                              title="View Analytics"
+                              onClick={() => openAnalytics(course)}
+                            >
+                              <BarChart3 className="w-4 h-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="text-destructive"
+                              title="Delete Course"
+                              onClick={() => confirmDelete(course)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
 
           {/* Quick Actions */}
@@ -329,6 +460,48 @@ const InstructorDashboard = () => {
           </div>
         </div>
       </main>
+
+      {/* Analytics Dialog */}
+      {selectedCourse && (
+        <StudentAnalytics
+          isOpen={analyticsOpen}
+          onClose={() => setAnalyticsOpen(false)}
+          courseId={selectedCourse.id}
+          courseTitle={selectedCourse.title}
+        />
+      )}
+
+      {/* Marksheet Dialog */}
+      {selectedCourse && (
+        <MarksheetView
+          isOpen={marksheetOpen}
+          onClose={() => setMarksheetOpen(false)}
+          courseId={selectedCourse.id}
+          courseTitle={selectedCourse.title}
+        />
+      )}
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+              Delete Course
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{courseToDelete?.title}"? This action cannot be undone.
+              All modules, lessons, and student enrollments will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteCourse} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Footer />
     </div>

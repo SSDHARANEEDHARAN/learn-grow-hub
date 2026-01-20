@@ -159,6 +159,7 @@ export type Database = {
           course_id: string
           enrolled_at: string
           id: string
+          mentor_id: string | null
           user_id: string
         }
         Insert: {
@@ -166,6 +167,7 @@ export type Database = {
           course_id: string
           enrolled_at?: string
           id?: string
+          mentor_id?: string | null
           user_id: string
         }
         Update: {
@@ -173,11 +175,62 @@ export type Database = {
           course_id?: string
           enrolled_at?: string
           id?: string
+          mentor_id?: string | null
           user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "enrollments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hardware_orders: {
+        Row: {
+          amount: number
+          course_id: string | null
+          created_at: string
+          hardware_type: string
+          id: string
+          phone: string
+          quantity: number | null
+          shipping_address: string
+          status: string | null
+          stripe_payment_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          course_id?: string | null
+          created_at?: string
+          hardware_type: string
+          id?: string
+          phone: string
+          quantity?: number | null
+          shipping_address: string
+          status?: string | null
+          stripe_payment_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          course_id?: string | null
+          created_at?: string
+          hardware_type?: string
+          id?: string
+          phone?: string
+          quantity?: number | null
+          shipping_address?: string
+          status?: string | null
+          stripe_payment_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hardware_orders_course_id_fkey"
             columns: ["course_id"]
             isOneToOne: false
             referencedRelation: "courses"
@@ -281,6 +334,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      mentors: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          expertise: string[] | null
+          id: string
+          is_active: boolean | null
+          name: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          expertise?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          expertise?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+        }
+        Relationships: []
       }
       modules: {
         Row: {
@@ -575,6 +658,57 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      student_performance: {
+        Row: {
+          course_id: string | null
+          created_at: string
+          id: string
+          last_activity: string | null
+          lessons_completed: number | null
+          module_id: string | null
+          quiz_score: number | null
+          total_watch_time: number | null
+          user_id: string
+        }
+        Insert: {
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          last_activity?: string | null
+          lessons_completed?: number | null
+          module_id?: string | null
+          quiz_score?: number | null
+          total_watch_time?: number | null
+          user_id: string
+        }
+        Update: {
+          course_id?: string | null
+          created_at?: string
+          id?: string
+          last_activity?: string | null
+          lessons_completed?: number | null
+          module_id?: string | null
+          quiz_score?: number | null
+          total_watch_time?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_performance_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_performance_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
