@@ -9,6 +9,8 @@ import QuizComponent from '@/components/QuizComponent';
 import ReviewsSection from '@/components/ReviewsSection';
 import PaymentButton from '@/components/PaymentButton';
 import RewardPointsDisplay from '@/components/RewardPointsDisplay';
+import EnrollmentForm from '@/components/EnrollmentForm';
+import HardwarePurchaseForm from '@/components/HardwarePurchaseForm';
 import { useCourse } from '@/hooks/useCourses';
 import { useEnrollment } from '@/hooks/useEnrollment';
 import { useLessonProgress } from '@/hooks/useLessonProgress';
@@ -19,7 +21,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
   Star, Clock, BookOpen, Users, Award, CheckCircle, 
-  Play, FileText, Download, Share2, Heart, Lock
+  Play, FileText, Download, Share2, Heart, Lock, Package
 } from 'lucide-react';
 
 const CourseDetail = () => {
@@ -30,6 +32,8 @@ const CourseDetail = () => {
   const { isEnrolled, hasPaid, isLoading: enrollmentLoading } = useEnrollment(id || '');
   const { progress, completedLessons } = useLessonProgress(id || '');
   const [activeLesson, setActiveLesson] = useState<string | null>(null);
+  const [enrollmentFormOpen, setEnrollmentFormOpen] = useState(false);
+  const [hardwareFormOpen, setHardwareFormOpen] = useState(false);
 
   // Calculate progress percentage
   const totalLessons = course?.lessons_count || 0;
@@ -207,19 +211,27 @@ const CourseDetail = () => {
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      <PaymentButton 
-                        courseId={course.id}
-                        courseTitle={course.title}
-                        price={course.price || 0}
-                        onPaymentComplete={() => window.location.reload()}
-                      />
+                      <Button 
+                        variant="hero" 
+                        className="w-full gap-2" 
+                        size="lg"
+                        onClick={() => user ? setEnrollmentFormOpen(true) : navigate('/auth')}
+                      >
+                        <BookOpen className="w-5 h-5" />
+                        Enroll Now
+                      </Button>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground justify-center">
                         <Lock className="w-4 h-4" />
-                        <span>Payment required to access course content</span>
+                        <span>Payment required after enrollment</span>
                       </div>
-                      <Button variant="outline" className="w-full gap-2" size="lg">
-                        <Heart className="w-5 h-5" />
-                        Add to Wishlist
+                      <Button 
+                        variant="outline" 
+                        className="w-full gap-2" 
+                        size="lg"
+                        onClick={() => setHardwareFormOpen(true)}
+                      >
+                        <Package className="w-5 h-5" />
+                        Buy Hardware Kit
                       </Button>
                     </div>
                   )}
@@ -357,6 +369,23 @@ const CourseDetail = () => {
           </div>
         </section>
       </main>
+
+      {/* Enrollment Form */}
+      <EnrollmentForm
+        isOpen={enrollmentFormOpen}
+        onClose={() => setEnrollmentFormOpen(false)}
+        courseId={course.id}
+        courseTitle={course.title}
+        onEnrollmentComplete={() => window.location.reload()}
+      />
+
+      {/* Hardware Purchase Form */}
+      <HardwarePurchaseForm
+        isOpen={hardwareFormOpen}
+        onClose={() => setHardwareFormOpen(false)}
+        courseId={course.id}
+        courseTitle={course.title}
+      />
 
       <Footer />
     </div>
