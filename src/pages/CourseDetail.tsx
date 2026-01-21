@@ -342,7 +342,7 @@ const CourseDetail = () => {
                   {canAccessCourse && (
                     <>
                       <TabsContent value="quiz">
-                        <QuizComponent />
+                        <QuizComponent lessonId={activeLesson || ''} />
                       </TabsContent>
 
                       <TabsContent value="discussion">
