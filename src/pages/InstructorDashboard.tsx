@@ -5,6 +5,7 @@ import Footer from '@/components/Footer';
 import StudentAnalytics from '@/components/StudentAnalytics';
 import MarksheetView from '@/components/MarksheetView';
 import QuizBuilder from '@/components/QuizBuilder';
+import QuizAnalytics from '@/components/QuizAnalytics';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -64,6 +65,7 @@ const InstructorDashboard = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
+  const [quizAnalyticsOpen, setQuizAnalyticsOpen] = useState(false);
   const [marksheetOpen, setMarksheetOpen] = useState(false);
   const [quizBuilderOpen, setQuizBuilderOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -181,6 +183,11 @@ const InstructorDashboard = () => {
   const openAnalytics = (course: Course) => {
     setSelectedCourse(course);
     setAnalyticsOpen(true);
+  };
+
+  const openQuizAnalytics = (course: Course) => {
+    setSelectedCourse(course);
+    setQuizAnalyticsOpen(true);
   };
 
   const openMarksheet = (course: Course) => {
@@ -413,6 +420,14 @@ const InstructorDashboard = () => {
                             </Button>
                             <Button 
                               variant="ghost" 
+                              size="icon"
+                              title="Quiz Analytics"
+                              onClick={() => openQuizAnalytics(course)}
+                            >
+                              <HelpCircle className="w-4 h-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
                               size="icon" 
                               className="text-destructive"
                               title="Delete Course"
@@ -495,6 +510,16 @@ const InstructorDashboard = () => {
         <StudentAnalytics
           isOpen={analyticsOpen}
           onClose={() => setAnalyticsOpen(false)}
+          courseId={selectedCourse.id}
+          courseTitle={selectedCourse.title}
+        />
+      )}
+
+      {/* Quiz Analytics Dialog */}
+      {selectedCourse && (
+        <QuizAnalytics
+          isOpen={quizAnalyticsOpen}
+          onClose={() => setQuizAnalyticsOpen(false)}
           courseId={selectedCourse.id}
           courseTitle={selectedCourse.title}
         />

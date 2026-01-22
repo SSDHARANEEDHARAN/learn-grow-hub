@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -54,6 +54,14 @@ const QuizBuilder = ({ isOpen, onClose, courseId, courseTitle }: QuizBuilderProp
   const [existingQuizId, setExistingQuizId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  const hasQuestions = questions.length > 0;
+  const dndHelpText = useMemo(
+    () => (hasQuestions ? 'Drag the grip to reorder questions.' : ''),
+    [hasQuestions]
+  );
 
   useEffect(() => {
     if (isOpen && courseId) {
@@ -182,6 +190,45 @@ const QuizBuilder = ({ isOpen, onClose, courseId, courseTitle }: QuizBuilderProp
 
   const removeQuestion = (index: number) => {
     setQuestions(questions.filter((_, i) => i !== index));
+  };
+
+  const moveQuestion = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return;
+
+    setQuestions((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, moved);
+      return next.map((q, idx) => ({ ...q, order_index: idx }));
+    });
+  };
+
+  const handleDragStart = (fromIndex: number) => (e: React.DragEvent) => {
+    setDraggingIndex(fromIndex);
+    setDragOverIndex(fromIndex);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(fromIndex));
+  };
+
+  const handleDragOver = (toIndex: number) => (e: React.DragEvent) => {
+    e.preventDefault();
+    if (dragOverIndex !== toIndex) setDragOverIndex(toIndex);
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (toIndex: number) => (e: React.DragEvent) => {
+    e.preventDefault();
+    const from = Number(e.dataTransfer.getData('text/plain'));
+    if (Number.isFinite(from)) {
+      moveQuestion(from, toIndex);
+    }
+    setDraggingIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggingIndex(null);
+    setDragOverIndex(null);
   };
 
   const handleSave = async () => {
@@ -358,10 +405,32 @@ const QuizBuilder = ({ isOpen, onClose, courseId, courseTitle }: QuizBuilderProp
                   </div>
                 ) : (
                   <div className="space-y-4">
+                    {dndHelpText ? (
+                      <p className="text-xs text-muted-foreground">{dndHelpText}</p>
+                    ) : null}
                     {questions.map((q, qIndex) => (
-                      <div key={qIndex} className="border border-border rounded-lg p-4 space-y-4">
+                      <div
+                        key={qIndex}
+                        className={`border border-border rounded-lg p-4 space-y-4 transition-colors ${
+                          dragOverIndex === qIndex && draggingIndex !== null && draggingIndex !== qIndex
+                            ? 'bg-accent/30'
+                            : ''
+                        }`}
+                        onDragOver={handleDragOver(qIndex)}
+                        onDrop={handleDrop(qIndex)}
+                      >
                         <div className="flex items-start gap-3">
-                          <GripVertical className="w-5 h-5 text-muted-foreground mt-2 cursor-grab" />
+                          <button
+                            type="button"
+                            className="mt-2 cursor-grab text-muted-foreground"
+                            draggable
+                            onDragStart={handleDragStart(qIndex)}
+                            onDragEnd={handleDragEnd}
+                            aria-label={`Reorder question ${qIndex + 1}`}
+                            title="Drag to reorder"
+                          >
+                            <GripVertical className="w-5 h-5" />
+                          </button>
                           <div className="flex-1 space-y-3">
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-medium text-muted-foreground">Q{qIndex + 1}</span>
