@@ -471,6 +471,42 @@ export type Database = {
         }
         Relationships: []
       }
+      question_bank: {
+        Row: {
+          correct_answer: number
+          created_at: string
+          difficulty: string | null
+          explanation: string | null
+          id: string
+          instructor_id: string
+          options: Json
+          question: string
+          tags: string[] | null
+        }
+        Insert: {
+          correct_answer: number
+          created_at?: string
+          difficulty?: string | null
+          explanation?: string | null
+          id?: string
+          instructor_id: string
+          options?: Json
+          question: string
+          tags?: string[] | null
+        }
+        Update: {
+          correct_answer?: number
+          created_at?: string
+          difficulty?: string | null
+          explanation?: string | null
+          id?: string
+          instructor_id?: string
+          options?: Json
+          question?: string
+          tags?: string[] | null
+        }
+        Relationships: []
+      }
       quiz_attempts: {
         Row: {
           answers: Json | null
@@ -550,6 +586,7 @@ export type Database = {
       quizzes: {
         Row: {
           created_at: string
+          hide_explanations: boolean | null
           id: string
           lesson_id: string | null
           passing_score: number
@@ -559,6 +596,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          hide_explanations?: boolean | null
           id?: string
           lesson_id?: string | null
           passing_score?: number
@@ -568,6 +606,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          hide_explanations?: boolean | null
           id?: string
           lesson_id?: string | null
           passing_score?: number

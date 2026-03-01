@@ -312,11 +312,18 @@ const QuizComponent = ({ lessonId }: QuizComponentProps) => {
                       })}
                     </div>
 
-                    {/* Explanation */}
-                    {q.explanation && (
+                    {/* Explanation - respect hide_explanations setting */}
+                    {q.explanation && !quiz.hide_explanations && (
                       <div className="p-3 rounded-lg bg-primary/5 border border-primary/10 mt-2">
                         <p className="text-sm text-muted-foreground">
                           <span className="font-medium text-primary">Explanation:</span> {q.explanation}
+                        </p>
+                      </div>
+                    )}
+                    {q.explanation && quiz.hide_explanations && (
+                      <div className="p-3 rounded-lg bg-muted/50 border border-border mt-2">
+                        <p className="text-sm text-muted-foreground italic">
+                          Explanations are hidden for this quiz.
                         </p>
                       </div>
                     )}

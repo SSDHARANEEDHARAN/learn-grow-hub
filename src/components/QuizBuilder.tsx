@@ -15,9 +15,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Trash2, GripVertical, Check, Save } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Plus, Trash2, GripVertical, Check, Save, Library } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import QuestionBank from './QuestionBank';
 
 interface Question {
   id?: string;
@@ -52,6 +54,8 @@ const QuizBuilder = ({ isOpen, onClose, courseId, courseTitle }: QuizBuilderProp
   const [timeLimit, setTimeLimit] = useState<number | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [existingQuizId, setExistingQuizId] = useState<string | null>(null);
+  const [hideExplanations, setHideExplanations] = useState(false);
+  const [questionBankOpen, setQuestionBankOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
@@ -127,6 +131,7 @@ const QuizBuilder = ({ isOpen, onClose, courseId, courseTitle }: QuizBuilderProp
         setPassingScore(quiz.passing_score);
         setPointsReward(quiz.points_reward || 10);
         setTimeLimit(quiz.time_limit);
+        setHideExplanations(quiz.hide_explanations || false);
         setQuestions(
           (quiz.quiz_questions || [])
             .sort((a: any, b: any) => (a.order_index || 0) - (b.order_index || 0))
@@ -158,6 +163,7 @@ const QuizBuilder = ({ isOpen, onClose, courseId, courseTitle }: QuizBuilderProp
     setPassingScore(70);
     setPointsReward(10);
     setTimeLimit(null);
+    setHideExplanations(false);
     setQuestions([]);
   };
 
@@ -172,6 +178,18 @@ const QuizBuilder = ({ isOpen, onClose, courseId, courseTitle }: QuizBuilderProp
         order_index: questions.length,
       },
     ]);
+  };
+
+  const handleBankImport = (imported: Array<{ question: string; options: string[]; correct_answer: number; explanation: string }>) => {
+    const newQuestions: Question[] = imported.map((q, i) => ({
+      question: q.question,
+      options: q.options,
+      correct_answer: q.correct_answer,
+      explanation: q.explanation,
+      order_index: questions.length + i,
+    }));
+    setQuestions([...questions, ...newQuestions]);
+    toast.success(`Imported ${imported.length} questions from bank`);
   };
 
   const updateQuestion = (index: number, field: keyof Question, value: any) => {
@@ -275,6 +293,7 @@ const QuizBuilder = ({ isOpen, onClose, courseId, courseTitle }: QuizBuilderProp
             passing_score: passingScore,
             points_reward: pointsReward,
             time_limit: timeLimit,
+            hide_explanations: hideExplanations,
           })
           .eq('id', existingQuizId);
 
@@ -295,6 +314,7 @@ const QuizBuilder = ({ isOpen, onClose, courseId, courseTitle }: QuizBuilderProp
             passing_score: passingScore,
             points_reward: pointsReward,
             time_limit: timeLimit,
+            hide_explanations: hideExplanations,
           })
           .select()
           .single();
@@ -389,14 +409,29 @@ const QuizBuilder = ({ isOpen, onClose, courseId, courseTitle }: QuizBuilderProp
                 </div>
               </div>
 
+              {/* Hide Explanations Toggle */}
+              <div className="flex items-center justify-between p-3 border border-border rounded-lg">
+                <div>
+                  <label className="text-sm font-medium">Hide Explanations Until After Attempt</label>
+                  <p className="text-xs text-muted-foreground">Students won't see explanations until they submit the quiz</p>
+                </div>
+                <Switch checked={hideExplanations} onCheckedChange={setHideExplanations} />
+              </div>
+
               {/* Questions */}
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <h3 className="font-semibold">Questions ({questions.length})</h3>
-                  <Button onClick={addQuestion} size="sm" className="gap-2">
-                    <Plus className="w-4 h-4" />
-                    Add Question
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button onClick={() => setQuestionBankOpen(true)} size="sm" variant="outline" className="gap-2">
+                      <Library className="w-4 h-4" />
+                      Question Bank
+                    </Button>
+                    <Button onClick={addQuestion} size="sm" className="gap-2">
+                      <Plus className="w-4 h-4" />
+                      Add Question
+                    </Button>
+                  </div>
                 </div>
 
                 {questions.length === 0 ? (
@@ -507,6 +542,12 @@ const QuizBuilder = ({ isOpen, onClose, courseId, courseTitle }: QuizBuilderProp
           )}
         </div>
       </DialogContent>
+
+      <QuestionBank
+        isOpen={questionBankOpen}
+        onClose={() => setQuestionBankOpen(false)}
+        onImport={handleBankImport}
+      />
     </Dialog>
   );
 };
