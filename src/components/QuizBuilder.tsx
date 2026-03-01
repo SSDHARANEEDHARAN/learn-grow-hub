@@ -163,6 +163,7 @@ const QuizBuilder = ({ isOpen, onClose, courseId, courseTitle }: QuizBuilderProp
     setPassingScore(70);
     setPointsReward(10);
     setTimeLimit(null);
+    setHideExplanations(false);
     setQuestions([]);
   };
 
