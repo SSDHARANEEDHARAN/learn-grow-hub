@@ -131,6 +131,7 @@ const QuizBuilder = ({ isOpen, onClose, courseId, courseTitle }: QuizBuilderProp
         setPassingScore(quiz.passing_score);
         setPointsReward(quiz.points_reward || 10);
         setTimeLimit(quiz.time_limit);
+        setHideExplanations(quiz.hide_explanations || false);
         setQuestions(
           (quiz.quiz_questions || [])
             .sort((a: any, b: any) => (a.order_index || 0) - (b.order_index || 0))
