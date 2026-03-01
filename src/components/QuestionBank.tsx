@@ -123,7 +123,7 @@ export default function QuestionBank({ isOpen, onClose, onImport }: QuestionBank
 
   const handleImportSelected = () => {
     const selected = questions.filter(q => selectedIds.has(q.id));
-    onImport(selected.map(({ id, ...rest }) => rest));
+    onImport(selected.map(({ id: _id, ...rest }) => rest));
     setSelectedIds(new Set());
     onClose();
   };
