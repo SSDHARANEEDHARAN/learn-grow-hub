@@ -44,7 +44,7 @@ export default function QuizDrilldown({ isOpen, onClose, quizId, quizTitle }: Qu
 
       const result: QuestionDetail[] = sorted.map((q: any, idx: number) => {
         const opts = Array.isArray(q.options) ? q.options as string[] : [];
-        const optionCounts = new Array(opts.length).fill(0);
+        const optionCounts = Array.from({ length: opts.length }, () => 0);
         let correctCount = 0;
         let totalAttempts = 0;
 

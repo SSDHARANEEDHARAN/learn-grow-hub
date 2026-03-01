@@ -132,7 +132,7 @@ export default function QuestionBank({ isOpen, onClose, onImport }: QuestionBank
     const filtered = getFilteredQuestions();
     const shuffled = [...filtered].sort(() => Math.random() - 0.5);
     const picked = shuffled.slice(0, count);
-    onImport(picked.map(({ id, ...rest }) => rest));
+    onImport(picked.map(({ id: _id, ...rest }) => rest));
     onClose();
   };
 
