@@ -314,6 +314,7 @@ const QuizBuilder = ({ isOpen, onClose, courseId, courseTitle }: QuizBuilderProp
             passing_score: passingScore,
             points_reward: pointsReward,
             time_limit: timeLimit,
+            hide_explanations: hideExplanations,
           })
           .select()
           .single();
