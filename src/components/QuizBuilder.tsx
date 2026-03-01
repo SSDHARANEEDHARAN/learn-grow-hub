@@ -180,6 +180,18 @@ const QuizBuilder = ({ isOpen, onClose, courseId, courseTitle }: QuizBuilderProp
     ]);
   };
 
+  const handleBankImport = (imported: Array<{ question: string; options: string[]; correct_answer: number; explanation: string }>) => {
+    const newQuestions: Question[] = imported.map((q, i) => ({
+      question: q.question,
+      options: q.options,
+      correct_answer: q.correct_answer,
+      explanation: q.explanation,
+      order_index: questions.length + i,
+    }));
+    setQuestions([...questions, ...newQuestions]);
+    toast.success(`Imported ${imported.length} questions from bank`);
+  };
+
   const updateQuestion = (index: number, field: keyof Question, value: any) => {
     const updated = [...questions];
     updated[index] = { ...updated[index], [field]: value };
