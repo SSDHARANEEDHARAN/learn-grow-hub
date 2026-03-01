@@ -542,6 +542,12 @@ const QuizBuilder = ({ isOpen, onClose, courseId, courseTitle }: QuizBuilderProp
           )}
         </div>
       </DialogContent>
+
+      <QuestionBank
+        isOpen={questionBankOpen}
+        onClose={() => setQuestionBankOpen(false)}
+        onImport={handleBankImport}
+      />
     </Dialog>
   );
 };
