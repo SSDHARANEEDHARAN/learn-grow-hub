@@ -409,14 +409,29 @@ const QuizBuilder = ({ isOpen, onClose, courseId, courseTitle }: QuizBuilderProp
                 </div>
               </div>
 
+              {/* Hide Explanations Toggle */}
+              <div className="flex items-center justify-between p-3 border border-border rounded-lg">
+                <div>
+                  <label className="text-sm font-medium">Hide Explanations Until After Attempt</label>
+                  <p className="text-xs text-muted-foreground">Students won't see explanations until they submit the quiz</p>
+                </div>
+                <Switch checked={hideExplanations} onCheckedChange={setHideExplanations} />
+              </div>
+
               {/* Questions */}
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <h3 className="font-semibold">Questions ({questions.length})</h3>
-                  <Button onClick={addQuestion} size="sm" className="gap-2">
-                    <Plus className="w-4 h-4" />
-                    Add Question
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button onClick={() => setQuestionBankOpen(true)} size="sm" variant="outline" className="gap-2">
+                      <Library className="w-4 h-4" />
+                      Question Bank
+                    </Button>
+                    <Button onClick={addQuestion} size="sm" className="gap-2">
+                      <Plus className="w-4 h-4" />
+                      Add Question
+                    </Button>
+                  </div>
                 </div>
 
                 {questions.length === 0 ? (
