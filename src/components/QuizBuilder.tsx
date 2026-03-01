@@ -15,9 +15,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Plus, Trash2, GripVertical, Check, Save } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Plus, Trash2, GripVertical, Check, Save, Library } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import QuestionBank from './QuestionBank';
 
 interface Question {
   id?: string;
