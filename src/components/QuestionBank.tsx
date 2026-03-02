@@ -38,6 +38,7 @@ export default function QuestionBank({ isOpen, onClose, onImport }: QuestionBank
   const [filterDifficulty, setFilterDifficulty] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showAdd, setShowAdd] = useState(false);
+  const csvInputRef = useRef<HTMLInputElement>(null);
   const [newQ, setNewQ] = useState({
     question: '',
     options: ['', '', '', ''],
