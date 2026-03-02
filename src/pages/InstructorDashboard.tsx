@@ -67,6 +67,7 @@ const InstructorDashboard = () => {
   const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const [quizAnalyticsOpen, setQuizAnalyticsOpen] = useState(false);
+  const [scoreAnalyticsOpen, setScoreAnalyticsOpen] = useState(false);
   const [marksheetOpen, setMarksheetOpen] = useState(false);
   const [quizBuilderOpen, setQuizBuilderOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
