@@ -6,6 +6,7 @@ import StudentAnalytics from '@/components/StudentAnalytics';
 import MarksheetView from '@/components/MarksheetView';
 import QuizBuilder from '@/components/QuizBuilder';
 import QuizAnalytics from '@/components/QuizAnalytics';
+import ScoreAnalyticsDashboard from '@/components/ScoreAnalyticsDashboard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
