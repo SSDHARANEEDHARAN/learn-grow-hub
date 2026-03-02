@@ -5,10 +5,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Check, Search, Tag, Shuffle, Import } from 'lucide-react';
+import { Plus, Trash2, Check, Search, Tag, Shuffle, Import, Upload } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { useRef } from 'react';
 
 interface BankQuestion {
   id: string;
