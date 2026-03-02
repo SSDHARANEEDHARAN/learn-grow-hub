@@ -535,6 +535,16 @@ const InstructorDashboard = () => {
         />
       )}
 
+      {/* Score Analytics Dashboard */}
+      {selectedCourse && (
+        <ScoreAnalyticsDashboard
+          isOpen={scoreAnalyticsOpen}
+          onClose={() => setScoreAnalyticsOpen(false)}
+          courseId={selectedCourse.id}
+          courseTitle={selectedCourse.title}
+        />
+      )}
+
       {/* Marksheet Dialog */}
       {selectedCourse && (
         <MarksheetView
