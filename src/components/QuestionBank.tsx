@@ -306,6 +306,9 @@ export default function QuestionBank({ isOpen, onClose, onImport }: QuestionBank
             <Button size="sm" variant="outline" onClick={() => handleRandomImport(10)} disabled={filtered.length < 2} className="gap-1">
               <Shuffle className="w-4 h-4" /> Random 10
             </Button>
+            <Button size="sm" variant="secondary" onClick={handleAutoTag} disabled={isAutoTagging || questions.length === 0} className="gap-1">
+              <Wand2 className="w-4 h-4" /> {isAutoTagging ? 'Analyzing...' : 'Auto-Tag Difficulty'}
+            </Button>
           </div>
 
           {/* Add form */}
