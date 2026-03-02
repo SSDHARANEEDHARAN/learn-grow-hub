@@ -423,6 +423,14 @@ const InstructorDashboard = () => {
                             <Button 
                               variant="ghost" 
                               size="icon"
+                              title="Score Analytics"
+                              onClick={() => { setSelectedCourse(course); setScoreAnalyticsOpen(true); }}
+                            >
+                              <TrendingUp className="w-4 h-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
                               title="Quiz Analytics"
                               onClick={() => openQuizAnalytics(course)}
                             >
