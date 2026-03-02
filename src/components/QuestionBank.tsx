@@ -138,6 +138,73 @@ export default function QuestionBank({ isOpen, onClose, onImport }: QuestionBank
     onClose();
   };
 
+  const handleCSVImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    const text = await file.text();
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length < 2) { toast.error('CSV must have a header row and at least one data row'); return; }
+
+    const header = lines[0].split(',').map(h => h.trim().toLowerCase());
+    const qIdx = header.indexOf('question');
+    const o1 = header.indexOf('option1');
+    const o2 = header.indexOf('option2');
+    const o3 = header.indexOf('option3');
+    const o4 = header.indexOf('option4');
+    const caIdx = header.indexOf('correct_answer');
+    const exIdx = header.indexOf('explanation');
+    const tIdx = header.indexOf('tags');
+    const dIdx = header.indexOf('difficulty');
+
+    if (qIdx === -1 || o1 === -1 || o2 === -1) {
+      toast.error('CSV must have columns: question, option1, option2 (option3, option4, correct_answer, explanation, tags, difficulty optional)');
+      return;
+    }
+
+    const parseCSVLine = (line: string): string[] => {
+      const result: string[] = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        if (line[i] === '"') { inQuotes = !inQuotes; }
+        else if (line[i] === ',' && !inQuotes) { result.push(current.trim()); current = ''; }
+        else { current += line[i]; }
+      }
+      result.push(current.trim());
+      return result;
+    };
+
+    const rows = lines.slice(1).map(parseCSVLine);
+    const toInsert = rows.map(cols => {
+      const options = [cols[o1] || '', cols[o2] || '', cols[o3] ?? '', cols[o4] ?? ''].filter(Boolean);
+      const correctRaw = caIdx !== -1 ? parseInt(cols[caIdx]) : 0;
+      const correct_answer = isNaN(correctRaw) ? 0 : correctRaw;
+      const tags = tIdx !== -1 && cols[tIdx] ? cols[tIdx].split(';').map(t => t.trim()).filter(Boolean) : [];
+      const difficulty = dIdx !== -1 && cols[dIdx] && DIFFICULTIES.includes(cols[dIdx]) ? cols[dIdx] : 'medium';
+      return {
+        instructor_id: user.id,
+        question: cols[qIdx] || '',
+        options,
+        correct_answer,
+        explanation: exIdx !== -1 ? cols[exIdx] || null : null,
+        tags,
+        difficulty,
+      };
+    }).filter(q => q.question);
+
+    if (toInsert.length === 0) { toast.error('No valid questions found in CSV'); return; }
+
+    try {
+      const { error } = await supabase.from('question_bank').insert(toInsert);
+      if (error) throw error;
+      toast.success(`Imported ${toInsert.length} questions`);
+      fetchQuestions();
+    } catch {
+      toast.error('Failed to import CSV');
+    }
+    if (csvInputRef.current) csvInputRef.current.value = '';
+  };
+
   const allTags = [...new Set(questions.flatMap(q => q.tags))];
 
   const getFilteredQuestions = () => {
