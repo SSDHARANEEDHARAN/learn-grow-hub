@@ -262,6 +262,10 @@ export default function QuestionBank({ isOpen, onClose, onImport }: QuestionBank
             <Button size="sm" onClick={() => setShowAdd(!showAdd)} className="gap-1">
               <Plus className="w-4 h-4" /> Add Question
             </Button>
+            <Button size="sm" variant="outline" onClick={() => csvInputRef.current?.click()} className="gap-1">
+              <Upload className="w-4 h-4" /> Import CSV
+            </Button>
+            <input ref={csvInputRef} type="file" accept=".csv" className="hidden" onChange={handleCSVImport} />
             <Button size="sm" variant="outline" onClick={handleImportSelected} disabled={selectedIds.size === 0} className="gap-1">
               <Import className="w-4 h-4" /> Import Selected ({selectedIds.size})
             </Button>
