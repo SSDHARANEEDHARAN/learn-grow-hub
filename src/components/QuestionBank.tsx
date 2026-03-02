@@ -205,6 +205,37 @@ export default function QuestionBank({ isOpen, onClose, onImport }: QuestionBank
     if (csvInputRef.current) csvInputRef.current.value = '';
   };
 
+  const [isAutoTagging, setIsAutoTagging] = useState(false);
+
+  const handleAutoTag = async () => {
+    setIsAutoTagging(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { toast.error('Not authenticated'); return; }
+      
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/auto-tag-difficulty`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      const result = await res.json();
+      if (result.error) throw new Error(result.error);
+      
+      if (result.updated > 0) {
+        toast.success(`Updated ${result.updated} question difficulties based on student performance`);
+        fetchQuestions();
+      } else {
+        toast.info(result.message || 'No updates needed — need more quiz attempt data');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to auto-tag difficulties');
+    } finally {
+      setIsAutoTagging(false);
+    }
+  };
+
   const allTags = [...new Set(questions.flatMap(q => q.tags))];
 
   const getFilteredQuestions = () => {
