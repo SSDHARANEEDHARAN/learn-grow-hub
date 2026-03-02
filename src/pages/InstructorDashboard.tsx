@@ -6,6 +6,7 @@ import StudentAnalytics from '@/components/StudentAnalytics';
 import MarksheetView from '@/components/MarksheetView';
 import QuizBuilder from '@/components/QuizBuilder';
 import QuizAnalytics from '@/components/QuizAnalytics';
+import ScoreAnalyticsDashboard from '@/components/ScoreAnalyticsDashboard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -66,6 +67,7 @@ const InstructorDashboard = () => {
   const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
   const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const [quizAnalyticsOpen, setQuizAnalyticsOpen] = useState(false);
+  const [scoreAnalyticsOpen, setScoreAnalyticsOpen] = useState(false);
   const [marksheetOpen, setMarksheetOpen] = useState(false);
   const [quizBuilderOpen, setQuizBuilderOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -421,6 +423,14 @@ const InstructorDashboard = () => {
                             <Button 
                               variant="ghost" 
                               size="icon"
+                              title="Score Analytics"
+                              onClick={() => { setSelectedCourse(course); setScoreAnalyticsOpen(true); }}
+                            >
+                              <TrendingUp className="w-4 h-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon"
                               title="Quiz Analytics"
                               onClick={() => openQuizAnalytics(course)}
                             >
@@ -520,6 +530,16 @@ const InstructorDashboard = () => {
         <QuizAnalytics
           isOpen={quizAnalyticsOpen}
           onClose={() => setQuizAnalyticsOpen(false)}
+          courseId={selectedCourse.id}
+          courseTitle={selectedCourse.title}
+        />
+      )}
+
+      {/* Score Analytics Dashboard */}
+      {selectedCourse && (
+        <ScoreAnalyticsDashboard
+          isOpen={scoreAnalyticsOpen}
+          onClose={() => setScoreAnalyticsOpen(false)}
           courseId={selectedCourse.id}
           courseTitle={selectedCourse.title}
         />
