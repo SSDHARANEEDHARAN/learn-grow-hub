@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipForward, SkipBack, PictureInPicture2 } from 'lucide-react';
+import { Play, Pause, Volume2, VolumeX, Maximize, Minimize, SkipForward, SkipBack, PictureInPicture2, Download, FastForward } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
 
 interface VideoPlayerProps {
   thumbnail: string;
@@ -28,21 +29,29 @@ const VideoPlayer = ({ thumbnail, title, videoUrl, lessonId, onProgress, onCompl
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [hasStarted, setHasStarted] = useState(false);
+  const [showSkipIntro, setShowSkipIntro] = useState(false);
   const hideControlsTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // Resume from last position
   useEffect(() => {
     if (videoRef.current && initialTime > 0 && hasStarted) {
       videoRef.current.currentTime = initialTime;
     }
   }, [hasStarted, initialTime]);
 
-  // Save progress to localStorage for resume
   useEffect(() => {
     if (lessonId && currentTime > 0) {
       localStorage.setItem(`video_progress_${lessonId}`, String(currentTime));
     }
   }, [currentTime, lessonId]);
+
+  // Show skip intro button in first 30 seconds
+  useEffect(() => {
+    if (hasStarted && currentTime < 30 && currentTime > 2) {
+      setShowSkipIntro(true);
+    } else {
+      setShowSkipIntro(false);
+    }
+  }, [currentTime, hasStarted]);
 
   const getSavedTime = useCallback(() => {
     if (!lessonId) return 0;
@@ -135,9 +144,36 @@ const VideoPlayer = ({ thumbnail, title, videoUrl, lessonId, onProgress, onCompl
     videoRef.current.currentTime = Math.max(0, Math.min(videoRef.current.currentTime + seconds, duration));
   };
 
+  const skipIntro = () => {
+    if (!videoRef.current) return;
+    videoRef.current.currentTime = 30;
+    setShowSkipIntro(false);
+  };
+
+  const handleDownload = async () => {
+    if (!videoUrl) {
+      toast.error('No video available to download');
+      return;
+    }
+    try {
+      const a = document.createElement('a');
+      a.href = videoUrl;
+      a.download = `${title.replace(/[^a-z0-9]/gi, '_')}.mp4`;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      toast.success('Download started');
+    } catch {
+      toast.error('Download failed');
+    }
+  };
+
   const formatTime = (t: number) => {
-    const m = Math.floor(t / 60);
+    const h = Math.floor(t / 3600);
+    const m = Math.floor((t % 3600) / 60);
     const s = Math.floor(t % 60);
+    if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
@@ -151,61 +187,18 @@ const VideoPlayer = ({ thumbnail, title, videoUrl, lessonId, onProgress, onCompl
 
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
-  // If no video URL, show thumbnail-only player
+  // Thumbnail-only placeholder player
   if (!videoUrl) {
     return (
-      <div className="relative group rounded-2xl overflow-hidden bg-black aspect-video">
+      <div className="relative group rounded-xl overflow-hidden bg-card border border-border aspect-video">
         <img src={thumbnail} alt={title} className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-          <button className="w-20 h-20 rounded-full bg-primary/90 flex items-center justify-center hover:bg-primary hover:scale-110 transition-all duration-300 shadow-lg">
-            <Play className="w-8 h-8 text-primary-foreground ml-1" />
+        <div className="absolute inset-0 bg-foreground/40 flex items-center justify-center">
+          <button className="w-16 h-16 rounded-full bg-primary flex items-center justify-center hover:scale-110 transition-transform shadow-lg">
+            <Play className="w-7 h-7 text-primary-foreground ml-0.5" />
           </button>
         </div>
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4">
-          <div className="mb-4">
-            <Slider value={[35]} max={100} step={1} className="cursor-pointer" />
-            <div className="flex justify-between text-xs text-white/70 mt-1">
-              <span>12:35</span>
-              <span>35:42</span>
-            </div>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
-                <Play className="w-5 h-5" />
-              </Button>
-              <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
-                <SkipBack className="w-5 h-5" />
-              </Button>
-              <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
-                <SkipForward className="w-5 h-5" />
-              </Button>
-              <div className="flex items-center gap-2 ml-2">
-                <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
-                  <Volume2 className="w-5 h-5" />
-                </Button>
-                <Slider value={[80]} max={100} step={1} className="w-24" />
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Select defaultValue="1">
-                <SelectTrigger className="w-16 h-8 text-xs bg-transparent border-white/30 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {PLAYBACK_SPEEDS.map(s => (
-                    <SelectItem key={s} value={String(s)}>{s}x</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
-                <PictureInPicture2 className="w-5 h-5" />
-              </Button>
-              <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
-                <Maximize className="w-5 h-5" />
-              </Button>
-            </div>
-          </div>
+        <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-foreground/80 to-transparent">
+          <p className="text-sm text-primary-foreground/70 text-center">No video available for this lesson</p>
         </div>
       </div>
     );
@@ -214,7 +207,7 @@ const VideoPlayer = ({ thumbnail, title, videoUrl, lessonId, onProgress, onCompl
   return (
     <div 
       ref={containerRef}
-      className="relative group rounded-2xl overflow-hidden bg-black aspect-video"
+      className="relative group rounded-xl overflow-hidden bg-foreground aspect-video border border-border"
       onMouseMove={handleMouseMove}
       onMouseLeave={() => isPlaying && setShowControls(false)}
     >
@@ -231,18 +224,30 @@ const VideoPlayer = ({ thumbnail, title, videoUrl, lessonId, onProgress, onCompl
         onClick={handlePlay}
       />
 
+      {/* Skip Intro Button */}
+      {showSkipIntro && (
+        <button
+          onClick={skipIntro}
+          className="absolute bottom-24 right-4 z-20 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-md hover:bg-primary/90 transition-colors flex items-center gap-2 shadow-lg"
+        >
+          <FastForward className="w-4 h-4" />
+          Skip Intro
+        </button>
+      )}
+
       {/* Play overlay */}
       {!hasStarted && (
-        <div className="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer" onClick={startPlayback}>
-          <button className="w-20 h-20 rounded-full bg-primary/90 flex items-center justify-center hover:bg-primary hover:scale-110 transition-all duration-300 shadow-lg">
+        <div className="absolute inset-0 bg-foreground/40 flex items-center justify-center cursor-pointer" onClick={startPlayback}>
+          <button className="w-20 h-20 rounded-full bg-primary flex items-center justify-center hover:scale-110 transition-transform shadow-lg">
             <Play className="w-8 h-8 text-primary-foreground ml-1" />
           </button>
         </div>
       )}
 
       {/* Controls */}
-      <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4 transition-opacity duration-300 ${showControls || !isPlaying ? 'opacity-100' : 'opacity-0'}`}>
-        <div className="mb-4">
+      <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-foreground/90 to-transparent p-4 transition-opacity duration-300 ${showControls || !isPlaying ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        {/* Progress bar */}
+        <div className="mb-3">
           <Slider
             value={[progressPercent]}
             onValueChange={handleSeek}
@@ -250,40 +255,45 @@ const VideoPlayer = ({ thumbnail, title, videoUrl, lessonId, onProgress, onCompl
             step={0.1}
             className="cursor-pointer"
           />
-          <div className="flex justify-between text-xs text-white/70 mt-1">
+          <div className="flex justify-between text-xs text-primary-foreground/70 mt-1">
             <span>{formatTime(currentTime)}</span>
             <span>{formatTime(duration)}</span>
           </div>
         </div>
 
         <div className="flex items-center justify-between">
+          {/* Left controls */}
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" onClick={handlePlay}>
-              {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+            <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/20 h-8 w-8" onClick={handlePlay}>
+              {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
             </Button>
-            <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" onClick={() => skip(-10)}>
-              <SkipBack className="w-5 h-5" />
+            <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/20 h-8 w-8" onClick={() => skip(-10)}>
+              <SkipBack className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" onClick={() => skip(10)}>
-              <SkipForward className="w-5 h-5" />
+            <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/20 h-8 w-8" onClick={() => skip(10)}>
+              <SkipForward className="w-4 h-4" />
             </Button>
-            <div className="flex items-center gap-2 ml-2">
-              <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" onClick={toggleMute}>
-                {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+            <div className="flex items-center gap-1 ml-1">
+              <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/20 h-8 w-8" onClick={toggleMute}>
+                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
               </Button>
               <Slider
                 value={[isMuted ? 0 : volume]}
                 onValueChange={handleVolumeChange}
                 max={100}
                 step={1}
-                className="w-24"
+                className="w-20"
               />
             </div>
+            <span className="text-xs text-primary-foreground/60 ml-2 hidden sm:inline">
+              {formatTime(currentTime)} / {formatTime(duration)}
+            </span>
           </div>
 
+          {/* Right controls */}
           <div className="flex items-center gap-1">
             <Select value={String(playbackSpeed)} onValueChange={handleSpeedChange}>
-              <SelectTrigger className="w-16 h-8 text-xs bg-transparent border-white/30 text-white">
+              <SelectTrigger className="w-14 h-7 text-xs bg-transparent border-primary-foreground/30 text-primary-foreground">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -292,11 +302,14 @@ const VideoPlayer = ({ thumbnail, title, videoUrl, lessonId, onProgress, onCompl
                 ))}
               </SelectContent>
             </Select>
-            <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" onClick={togglePiP}>
-              <PictureInPicture2 className="w-5 h-5" />
+            <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/20 h-8 w-8" onClick={handleDownload} title="Download Video">
+              <Download className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" onClick={toggleFullscreen}>
-              {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
+            <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/20 h-8 w-8" onClick={togglePiP} title="Picture in Picture">
+              <PictureInPicture2 className="w-4 h-4" />
+            </Button>
+            <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/20 h-8 w-8" onClick={toggleFullscreen}>
+              {isFullscreen ? <Minimize className="w-4 h-4" /> : <Maximize className="w-4 h-4" />}
             </Button>
           </div>
         </div>
