@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, BookOpen, Bell, User, Menu, X, LogOut } from 'lucide-react';
+import { Search, BookOpen, User, Menu, X, LogOut } from 'lucide-react';
+import NotificationsDropdown from '@/components/NotificationsDropdown';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useAuth } from '@/hooks/useAuth';
 import {
