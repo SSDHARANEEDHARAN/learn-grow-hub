@@ -6,6 +6,7 @@ import VideoPlayer from '@/components/VideoPlayer';
 import CourseContent from '@/components/CourseContent';
 import CommentsSection from '@/components/CommentsSection';
 import QuizComponent from '@/components/QuizComponent';
+import AIQuizComponent from '@/components/AIQuizComponent';
 import ReviewsSection from '@/components/ReviewsSection';
 import UPIPayment from '@/components/UPIPayment';
 import RewardPointsDisplay from '@/components/RewardPointsDisplay';
@@ -21,7 +22,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
   Star, Clock, BookOpen, Users, Award, CheckCircle, 
-  Play, FileText, Download, Share2, Heart, Lock, Package
+  Play, FileText, Download, Share2, Heart, Lock, Package, Sparkles
 } from 'lucide-react';
 
 const CourseDetail = () => {
@@ -294,6 +295,9 @@ const CourseDetail = () => {
                   <TabsList className="bg-secondary/50 p-1">
                     <TabsTrigger value="overview">Overview</TabsTrigger>
                     <TabsTrigger value="reviews">Reviews</TabsTrigger>
+                    <TabsTrigger value="ai-quiz" className="gap-1">
+                      <Sparkles className="w-3 h-3" /> AI Quiz
+                    </TabsTrigger>
                     {canAccessCourse && (
                       <>
                         <TabsTrigger value="quiz">Quiz</TabsTrigger>
@@ -334,6 +338,14 @@ const CourseDetail = () => {
 
                   <TabsContent value="reviews">
                     <ReviewsSection courseId={course.id} />
+                  </TabsContent>
+
+                  <TabsContent value="ai-quiz">
+                    <AIQuizComponent
+                      courseTitle={course.title}
+                      courseDescription={course.description}
+                      courseLevel={course.level}
+                    />
                   </TabsContent>
 
                   {canAccessCourse && (
