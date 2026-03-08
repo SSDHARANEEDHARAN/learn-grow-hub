@@ -41,7 +41,7 @@ const UPIPayment = ({ courseId, courseTitle, price, onPaymentComplete }: UPIPaym
 
   // Generate UPI deep link
   const upiAmount = price;
-  const upiLink = `upi://pay?pa=${UPI_ID}&pn=LearnWithRT&am=${upiAmount}&cu=INR&tn=Course-${courseId.slice(0, 8)}`;
+  const upiLink = `upi://pay?pa=${UPI_ID}&pn=LearHub&am=${upiAmount}&cu=INR&tn=Course-${courseId.slice(0, 8)}`;
 
   const generateTransactionRef = () => {
     return `LWRT-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
