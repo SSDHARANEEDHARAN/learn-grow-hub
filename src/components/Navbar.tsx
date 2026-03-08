@@ -148,7 +148,10 @@ const Navbar = () => {
               <Link to="/courses" className="px-4 py-2 text-sm font-medium tracking-wider uppercase hover:bg-primary/10 hover:text-primary">Courses</Link>
               <Link to="/dashboard" className="px-4 py-2 text-sm font-medium tracking-wider uppercase hover:bg-primary/10 hover:text-primary">My Learning</Link>
               {user && (
-                <Link to="/instructor" className="px-4 py-2 text-sm font-medium tracking-wider uppercase hover:bg-primary/10 hover:text-primary">Instructor</Link>
+                <>
+                  <Link to="/student-dashboard" className="px-4 py-2 text-sm font-medium tracking-wider uppercase hover:bg-primary/10 hover:text-primary">Student Dashboard</Link>
+                  <Link to="/instructor" className="px-4 py-2 text-sm font-medium tracking-wider uppercase hover:bg-primary/10 hover:text-primary">Instructor</Link>
+                </>
               )}
               {user ? (
                 <Button onClick={signOut} variant="outline" className="mt-2 border-primary/30">Sign Out</Button>
