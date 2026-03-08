@@ -13,7 +13,7 @@ import { Search, SlidersHorizontal, X } from 'lucide-react';
 const Courses = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All Courses');
-  const [priceRange, setPriceRange] = useState([0, 500]);
+  const [priceRange, setPriceRange] = useState([0, 50000]);
   const [sortBy, setSortBy] = useState('popular');
   const [showFilters, setShowFilters] = useState(false);
 
