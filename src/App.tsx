@@ -9,7 +9,9 @@ import Index from "./pages/Index";
 import Courses from "./pages/Courses";
 import CourseDetail from "./pages/CourseDetail";
 import Dashboard from "./pages/Dashboard";
-import Auth from "./pages/Auth";
+import PortalSelect from "./pages/PortalSelect";
+import StudentAuth from "./pages/StudentAuth";
+import InstructorAuth from "./pages/InstructorAuth";
 import InstructorDashboard from "./pages/InstructorDashboard";
 import Profile from "./pages/Profile";
 import Notifications from "./pages/Notifications";
@@ -31,10 +33,20 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/courses" element={<Courses />} />
               <Route path="/course/:id" element={<CourseDetail />} />
+              
+              {/* Portal Selection & Auth */}
+              <Route path="/auth" element={<PortalSelect />} />
+              <Route path="/auth/student" element={<StudentAuth />} />
+              <Route path="/auth/instructor" element={<InstructorAuth />} />
+              
+              {/* Student Routes */}
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/student-dashboard" element={<Dashboard />} />
-              <Route path="/auth" element={<Auth />} />
+              
+              {/* Instructor Routes */}
               <Route path="/instructor" element={<InstructorDashboard />} />
+              
+              {/* Shared Routes */}
               <Route path="/profile" element={<Profile />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
