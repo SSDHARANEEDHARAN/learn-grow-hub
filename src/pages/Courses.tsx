@@ -107,8 +107,8 @@ const Courses = () => {
                   <Slider
                     value={priceRange}
                     onValueChange={setPriceRange}
-                    max={500}
-                    step={10}
+                    max={50000}
+                    step={500}
                     className="mb-2"
                   />
                   <div className="flex justify-between text-sm text-muted-foreground">
