@@ -13,6 +13,8 @@ import Auth from "./pages/Auth";
 import InstructorDashboard from "./pages/InstructorDashboard";
 import Profile from "./pages/Profile";
 import Notifications from "./pages/Notifications";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
