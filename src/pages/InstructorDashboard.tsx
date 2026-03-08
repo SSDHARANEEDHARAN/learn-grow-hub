@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import Navbar from '@/components/Navbar';
+import InstructorNavbar from '@/components/InstructorNavbar';
 import Footer from '@/components/Footer';
 import StudentAnalytics from '@/components/StudentAnalytics';
 import MarksheetView from '@/components/MarksheetView';

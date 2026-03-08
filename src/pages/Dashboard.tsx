@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import Navbar from '@/components/Navbar';
+import StudentNavbar from '@/components/StudentNavbar';
 import Footer from '@/components/Footer';
 import CertificatePreview from '@/components/CertificatePreview';
 import RewardPointsDisplay from '@/components/RewardPointsDisplay';
