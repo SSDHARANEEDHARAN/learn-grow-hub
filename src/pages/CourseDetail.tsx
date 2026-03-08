@@ -22,7 +22,7 @@ import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
   Star, Clock, BookOpen, Users, Award, CheckCircle, 
-  Play, FileText, Download, Share2, Heart, Lock, Package
+  Play, FileText, Download, Share2, Heart, Lock, Package, Sparkles
 } from 'lucide-react';
 
 const CourseDetail = () => {
