@@ -6,6 +6,7 @@ import VideoPlayer from '@/components/VideoPlayer';
 import CourseContent from '@/components/CourseContent';
 import CommentsSection from '@/components/CommentsSection';
 import QuizComponent from '@/components/QuizComponent';
+import AIQuizComponent from '@/components/AIQuizComponent';
 import ReviewsSection from '@/components/ReviewsSection';
 import UPIPayment from '@/components/UPIPayment';
 import RewardPointsDisplay from '@/components/RewardPointsDisplay';
