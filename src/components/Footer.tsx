@@ -11,7 +11,7 @@ const Footer = () => {
               <div className="w-10 h-10 bg-primary/10 border border-primary/30 flex items-center justify-center">
                 <Zap className="w-5 h-5 text-primary" />
               </div>
-              <span className="font-display font-bold text-lg tracking-wider">LEARN<span className="text-primary">RT</span></span>
+              <span className="font-display font-bold text-lg tracking-wider">LEAR<span className="text-primary">HUB</span></span>
             </Link>
             <p className="text-sm text-muted-foreground">
               Empowering millions of learners worldwide with expert-led courses and certifications.
@@ -57,7 +57,7 @@ const Footer = () => {
         </div>
 
         <div className="pt-8 border-t border-primary/10 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-muted-foreground font-mono-cyber">© 2024 Learn With RT. All rights reserved.</p>
+          <p className="text-sm text-muted-foreground font-mono-cyber">© 2024 LearHub. All rights reserved.</p>
           <p className="text-sm text-muted-foreground">Made with <span className="text-primary">⚡</span> for learners everywhere</p>
         </div>
       </div>

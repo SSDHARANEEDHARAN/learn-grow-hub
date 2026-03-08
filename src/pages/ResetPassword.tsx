@@ -82,7 +82,7 @@ const ResetPassword = () => {
           <div className="w-12 h-12 bg-primary flex items-center justify-center">
             <BookOpen className="w-6 h-6 text-primary-foreground" />
           </div>
-          <span className="font-display font-bold text-2xl">Learn With RT</span>
+          <span className="font-display font-bold text-2xl">LearHub</span>
         </div>
 
         <div className="border border-border bg-card p-8">

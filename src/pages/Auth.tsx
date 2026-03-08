@@ -98,7 +98,7 @@ const Auth = () => {
         } else {
           toast({
             title: 'Account created!',
-            description: 'Welcome to Learn With RT!',
+            description: 'Welcome to LearHub!',
           });
           navigate('/');
         }
@@ -122,7 +122,7 @@ const Auth = () => {
           <div className="w-12 h-12 bg-primary flex items-center justify-center">
             <BookOpen className="w-6 h-6 text-primary-foreground" />
           </div>
-          <span className="font-display font-bold text-2xl">Learn With RT</span>
+          <span className="font-display font-bold text-2xl">LearHub</span>
         </div>
 
         {/* Card */}

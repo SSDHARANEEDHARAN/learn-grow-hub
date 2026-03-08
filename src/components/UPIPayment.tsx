@@ -41,7 +41,7 @@ const UPIPayment = ({ courseId, courseTitle, price, onPaymentComplete }: UPIPaym
 
   // Generate UPI deep link
   const upiAmount = price;
-  const upiLink = `upi://pay?pa=${UPI_ID}&pn=LearnWithRT&am=${upiAmount}&cu=INR&tn=Course-${courseId.slice(0, 8)}`;
+  const upiLink = `upi://pay?pa=${UPI_ID}&pn=LearHub&am=${upiAmount}&cu=INR&tn=Course-${courseId.slice(0, 8)}`;
 
   const generateTransactionRef = () => {
     return `LWRT-${Date.now()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
@@ -113,7 +113,7 @@ const UPIPayment = ({ courseId, courseTitle, price, onPaymentComplete }: UPIPaym
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(24);
     doc.setFont('helvetica', 'bold');
-    doc.text('LEARN WITH RT', 20, 25);
+    doc.text('LEARHUB', 20, 25);
     doc.setFontSize(10);
     doc.text('INVOICE', pageWidth - 40, 25);
 
@@ -176,7 +176,7 @@ const UPIPayment = ({ courseId, courseTitle, price, onPaymentComplete }: UPIPaym
     doc.text('1. This is a digital course purchase. No physical delivery applicable.', 20, footerY + 6);
     doc.text('2. Course access is non-transferable and linked to your registered account.', 20, footerY + 12);
     doc.text('3. Refund requests must be made within 7 days of purchase.', 20, footerY + 18);
-    doc.text('4. Learn With RT reserves the right to modify course content.', 20, footerY + 24);
+    doc.text('4. LearHub reserves the right to modify course content.', 20, footerY + 24);
     doc.text(`Generated on ${new Date().toLocaleString('en-IN')} | UPI Payment`, 20, footerY + 34);
 
     doc.save(`Invoice_${transactionRef}.pdf`);
@@ -386,11 +386,11 @@ const UPIPayment = ({ courseId, courseTitle, price, onPaymentComplete }: UPIPaym
                       <p>1. This is a digital course purchase. No physical delivery is applicable unless a hardware kit is ordered separately.</p>
                       <p>2. Course access is non-transferable and linked to your registered account only.</p>
                       <p>3. Refund requests must be submitted within 7 days of purchase. After 7 days, no refund will be processed.</p>
-                      <p>4. Learn With RT reserves the right to modify, update, or remove course content at any time.</p>
+                      <p>4. LearHub reserves the right to modify, update, or remove course content at any time.</p>
                       <p>5. Payment is processed via UPI. Ensure the correct amount is sent to the UPI ID displayed above.</p>
                       <p>6. Access to course materials will be granted only after payment verification.</p>
                       <p>7. Any misuse of course content, including sharing or redistribution, is strictly prohibited.</p>
-                      <p>8. By completing this payment, you agree to all terms and conditions of Learn With RT.</p>
+                      <p>8. By completing this payment, you agree to all terms and conditions of LearHub.</p>
                     </div>
                   )}
                 </div>
