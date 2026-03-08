@@ -340,6 +340,14 @@ const CourseDetail = () => {
                     <ReviewsSection courseId={course.id} />
                   </TabsContent>
 
+                  <TabsContent value="ai-quiz">
+                    <AIQuizComponent
+                      courseTitle={course.title}
+                      courseDescription={course.description}
+                      courseLevel={course.level}
+                    />
+                  </TabsContent>
+
                   {canAccessCourse && (
                     <>
                       <TabsContent value="quiz">
