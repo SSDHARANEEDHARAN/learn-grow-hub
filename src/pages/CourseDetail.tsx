@@ -7,7 +7,7 @@ import CourseContent from '@/components/CourseContent';
 import CommentsSection from '@/components/CommentsSection';
 import QuizComponent from '@/components/QuizComponent';
 import ReviewsSection from '@/components/ReviewsSection';
-import PaymentButton from '@/components/PaymentButton';
+import UPIPayment from '@/components/UPIPayment';
 import RewardPointsDisplay from '@/components/RewardPointsDisplay';
 import EnrollmentForm from '@/components/EnrollmentForm';
 import HardwarePurchaseForm from '@/components/HardwarePurchaseForm';
