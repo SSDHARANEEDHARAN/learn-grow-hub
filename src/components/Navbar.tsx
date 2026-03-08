@@ -35,7 +35,7 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            {[
+          {[
               { path: '/', label: 'Home' },
               { path: '/courses', label: 'Courses' },
               { path: '/dashboard', label: 'My Learning' },
@@ -51,14 +51,24 @@ const Navbar = () => {
               </Link>
             ))}
             {user && (
-              <Link 
-                to="/instructor" 
-                className={`text-sm font-medium tracking-wider uppercase transition-colors ${
-                  isActive('/instructor') ? 'text-primary neon-text' : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Instructor
-              </Link>
+              <>
+                <Link 
+                  to="/student-dashboard" 
+                  className={`text-sm font-medium tracking-wider uppercase transition-colors ${
+                    isActive('/student-dashboard') ? 'text-primary neon-text' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Student Dashboard
+                </Link>
+                <Link 
+                  to="/instructor" 
+                  className={`text-sm font-medium tracking-wider uppercase transition-colors ${
+                    isActive('/instructor') ? 'text-primary neon-text' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Instructor
+                </Link>
+              </>
             )}
           </div>
 
