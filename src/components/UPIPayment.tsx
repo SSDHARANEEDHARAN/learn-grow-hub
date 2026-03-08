@@ -113,7 +113,7 @@ const UPIPayment = ({ courseId, courseTitle, price, onPaymentComplete }: UPIPaym
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(24);
     doc.setFont('helvetica', 'bold');
-    doc.text('LEARN WITH RT', 20, 25);
+    doc.text('LEARHUB', 20, 25);
     doc.setFontSize(10);
     doc.text('INVOICE', pageWidth - 40, 25);
 
