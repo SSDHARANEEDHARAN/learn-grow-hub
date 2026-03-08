@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, BookOpen, User, Menu, X, LogOut, Zap } from 'lucide-react';
+import { Search, User, Menu, X, LogOut, Zap } from 'lucide-react';
 import NotificationsDropdown from '@/components/NotificationsDropdown';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useAuth } from '@/hooks/useAuth';
@@ -25,7 +25,6 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl border-b border-primary/10">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
             <div className="w-10 h-10 bg-primary/10 border border-primary/30 flex items-center justify-center">
               <Zap className="w-5 h-5 text-primary" />
@@ -33,12 +32,10 @@ const Navbar = () => {
             <span className="font-display font-bold text-lg tracking-wider">LEAR<span className="text-primary">HUB</span></span>
           </Link>
 
-          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-          {[
+            {[
               { path: '/', label: 'Home' },
               { path: '/courses', label: 'Courses' },
-              { path: '/dashboard', label: 'My Learning' },
             ].map(({ path, label }) => (
               <Link
                 key={path}
@@ -50,29 +47,8 @@ const Navbar = () => {
                 {label}
               </Link>
             ))}
-            {user && (
-              <>
-                <Link 
-                  to="/student-dashboard" 
-                  className={`text-sm font-medium tracking-wider uppercase transition-colors ${
-                    isActive('/student-dashboard') ? 'text-primary neon-text' : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  Student Dashboard
-                </Link>
-                <Link 
-                  to="/instructor" 
-                  className={`text-sm font-medium tracking-wider uppercase transition-colors ${
-                    isActive('/instructor') ? 'text-primary neon-text' : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  Instructor
-                </Link>
-              </>
-            )}
           </div>
 
-          {/* Search Bar */}
           <div className="hidden lg:flex items-center flex-1 max-w-md mx-8">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -83,7 +59,6 @@ const Navbar = () => {
             </div>
           </div>
 
-          {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-2">
             <ThemeToggle />
             
@@ -102,7 +77,7 @@ const Navbar = () => {
                       <Link to="/profile">My Profile</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/dashboard">My Dashboard</Link>
+                      <Link to="/dashboard">Student Dashboard</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link to="/instructor">Instructor Dashboard</Link>
@@ -122,7 +97,6 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
           <div className="flex items-center gap-2 md:hidden">
             <ThemeToggle />
             <Button 
@@ -136,7 +110,6 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-primary/10 animate-fade-in">
             <div className="flex flex-col gap-4">
@@ -146,15 +119,12 @@ const Navbar = () => {
               </div>
               <Link to="/" className="px-4 py-2 text-sm font-medium tracking-wider uppercase hover:bg-primary/10 hover:text-primary">Home</Link>
               <Link to="/courses" className="px-4 py-2 text-sm font-medium tracking-wider uppercase hover:bg-primary/10 hover:text-primary">Courses</Link>
-              <Link to="/dashboard" className="px-4 py-2 text-sm font-medium tracking-wider uppercase hover:bg-primary/10 hover:text-primary">My Learning</Link>
-              {user && (
-                <>
-                  <Link to="/student-dashboard" className="px-4 py-2 text-sm font-medium tracking-wider uppercase hover:bg-primary/10 hover:text-primary">Student Dashboard</Link>
-                  <Link to="/instructor" className="px-4 py-2 text-sm font-medium tracking-wider uppercase hover:bg-primary/10 hover:text-primary">Instructor</Link>
-                </>
-              )}
               {user ? (
-                <Button onClick={signOut} variant="outline" className="mt-2 border-primary/30">Sign Out</Button>
+                <>
+                  <Link to="/dashboard" className="px-4 py-2 text-sm font-medium tracking-wider uppercase hover:bg-primary/10 hover:text-primary">Student Dashboard</Link>
+                  <Link to="/instructor" className="px-4 py-2 text-sm font-medium tracking-wider uppercase hover:bg-primary/10 hover:text-primary">Instructor Dashboard</Link>
+                  <Button onClick={signOut} variant="outline" className="mt-2 border-primary/30">Sign Out</Button>
+                </>
               ) : (
                 <Link to="/auth">
                   <Button className="mt-2 w-full font-mono-cyber tracking-wider">Get Started</Button>
