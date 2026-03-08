@@ -44,7 +44,7 @@ const Dashboard = () => {
   if (!user) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
+        <StudentNavbar />
         <main className="pt-24 pb-16 container mx-auto px-4 text-center">
           <h1 className="text-2xl font-bold mb-4">Please login to view your dashboard</h1>
           <Link to="/auth">
