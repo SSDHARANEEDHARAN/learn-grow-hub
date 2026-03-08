@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, BookOpen, User, Menu, X, LogOut } from 'lucide-react';
+import { Search, BookOpen, User, Menu, X, LogOut, Zap } from 'lucide-react';
 import NotificationsDropdown from '@/components/NotificationsDropdown';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useAuth } from '@/hooks/useAuth';
@@ -22,41 +22,40 @@ const Navbar = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/90 backdrop-blur-xl border-b border-primary/10">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-primary flex items-center justify-center">
-              <BookOpen className="w-5 h-5 text-primary-foreground" />
+            <div className="w-10 h-10 bg-primary/10 border border-primary/30 flex items-center justify-center">
+              <Zap className="w-5 h-5 text-primary" />
             </div>
-            <span className="font-display font-bold text-xl">Learn With RT</span>
+            <span className="font-display font-bold text-lg tracking-wider">LEARN<span className="text-primary">RT</span></span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            <Link 
-              to="/" 
-              className={`text-sm font-medium transition-colors ${isActive('/') ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              Home
-            </Link>
-            <Link 
-              to="/courses" 
-              className={`text-sm font-medium transition-colors ${isActive('/courses') ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              Courses
-            </Link>
-            <Link 
-              to="/dashboard" 
-              className={`text-sm font-medium transition-colors ${isActive('/dashboard') ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              My Learning
-            </Link>
+            {[
+              { path: '/', label: 'Home' },
+              { path: '/courses', label: 'Courses' },
+              { path: '/dashboard', label: 'My Learning' },
+            ].map(({ path, label }) => (
+              <Link
+                key={path}
+                to={path}
+                className={`text-sm font-medium tracking-wider uppercase transition-colors ${
+                  isActive(path) ? 'text-primary neon-text' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {label}
+              </Link>
+            ))}
             {user && (
               <Link 
                 to="/instructor" 
-                className={`text-sm font-medium transition-colors ${isActive('/instructor') ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                className={`text-sm font-medium tracking-wider uppercase transition-colors ${
+                  isActive('/instructor') ? 'text-primary neon-text' : 'text-muted-foreground hover:text-foreground'
+                }`}
               >
                 Instructor
               </Link>
@@ -69,7 +68,7 @@ const Navbar = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input 
                 placeholder="Search courses..." 
-                className="pl-10 bg-secondary/50 border-border focus:bg-secondary"
+                className="pl-10 bg-secondary/50 border-primary/10 focus:border-primary/30 focus:bg-secondary font-mono-cyber text-sm"
               />
             </div>
           </div>
@@ -84,11 +83,11 @@ const Navbar = () => {
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
+                    <Button variant="ghost" size="icon" className="hover:bg-primary/10 hover:text-primary">
                       <User className="w-5 h-5" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                  <DropdownMenuContent align="end" className="border-primary/20">
                     <DropdownMenuItem asChild>
                       <Link to="/dashboard">My Dashboard</Link>
                     </DropdownMenuItem>
@@ -105,7 +104,7 @@ const Navbar = () => {
               </>
             ) : (
               <Link to="/auth">
-                <Button size="sm">Get Started</Button>
+                <Button size="sm" className="font-mono-cyber tracking-wider">Get Started</Button>
               </Link>
             )}
           </div>
@@ -117,6 +116,7 @@ const Navbar = () => {
               variant="ghost" 
               size="icon"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="hover:bg-primary/10"
             >
               {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
@@ -125,23 +125,23 @@ const Navbar = () => {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border animate-fade-in">
+          <div className="md:hidden py-4 border-t border-primary/10 animate-fade-in">
             <div className="flex flex-col gap-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input placeholder="Search courses..." className="pl-10" />
+                <Input placeholder="Search courses..." className="pl-10 font-mono-cyber text-sm" />
               </div>
-              <Link to="/" className="px-4 py-2 text-sm font-medium hover:bg-secondary">Home</Link>
-              <Link to="/courses" className="px-4 py-2 text-sm font-medium hover:bg-secondary">Courses</Link>
-              <Link to="/dashboard" className="px-4 py-2 text-sm font-medium hover:bg-secondary">My Learning</Link>
+              <Link to="/" className="px-4 py-2 text-sm font-medium tracking-wider uppercase hover:bg-primary/10 hover:text-primary">Home</Link>
+              <Link to="/courses" className="px-4 py-2 text-sm font-medium tracking-wider uppercase hover:bg-primary/10 hover:text-primary">Courses</Link>
+              <Link to="/dashboard" className="px-4 py-2 text-sm font-medium tracking-wider uppercase hover:bg-primary/10 hover:text-primary">My Learning</Link>
               {user && (
-                <Link to="/instructor" className="px-4 py-2 text-sm font-medium hover:bg-secondary">Instructor</Link>
+                <Link to="/instructor" className="px-4 py-2 text-sm font-medium tracking-wider uppercase hover:bg-primary/10 hover:text-primary">Instructor</Link>
               )}
               {user ? (
-                <Button onClick={signOut} variant="outline" className="mt-2">Sign Out</Button>
+                <Button onClick={signOut} variant="outline" className="mt-2 border-primary/30">Sign Out</Button>
               ) : (
                 <Link to="/auth">
-                  <Button className="mt-2 w-full">Get Started</Button>
+                  <Button className="mt-2 w-full font-mono-cyber tracking-wider">Get Started</Button>
                 </Link>
               )}
             </div>
