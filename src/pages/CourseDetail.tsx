@@ -295,6 +295,9 @@ const CourseDetail = () => {
                   <TabsList className="bg-secondary/50 p-1">
                     <TabsTrigger value="overview">Overview</TabsTrigger>
                     <TabsTrigger value="reviews">Reviews</TabsTrigger>
+                    <TabsTrigger value="ai-quiz" className="gap-1">
+                      <Sparkles className="w-3 h-3" /> AI Quiz
+                    </TabsTrigger>
                     {canAccessCourse && (
                       <>
                         <TabsTrigger value="quiz">Quiz</TabsTrigger>
