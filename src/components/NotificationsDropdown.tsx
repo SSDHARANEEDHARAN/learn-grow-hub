@@ -93,6 +93,11 @@ export default function NotificationsDropdown() {
             })
           )}
         </ScrollArea>
+        <div className="p-2 border-t border-border">
+          <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => navigate('/notifications')}>
+            View all notifications
+          </Button>
+        </div>
       </PopoverContent>
     </Popover>
   );
