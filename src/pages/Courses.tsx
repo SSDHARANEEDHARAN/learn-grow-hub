@@ -186,7 +186,7 @@ const Courses = () => {
                   <Button variant="outline" onClick={() => {
                     setSearchQuery('');
                     setActiveCategory('All Courses');
-                    setPriceRange([0, 500]);
+                    setPriceRange([0, 50000]);
                   }}>
                     Clear Filters
                   </Button>
