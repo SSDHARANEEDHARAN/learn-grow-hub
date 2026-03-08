@@ -89,6 +89,9 @@ const Navbar = () => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="border-primary/20">
                     <DropdownMenuItem asChild>
+                      <Link to="/profile">My Profile</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
                       <Link to="/dashboard">My Dashboard</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
