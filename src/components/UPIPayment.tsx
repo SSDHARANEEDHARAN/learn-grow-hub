@@ -390,7 +390,7 @@ const UPIPayment = ({ courseId, courseTitle, price, onPaymentComplete }: UPIPaym
                       <p>5. Payment is processed via UPI. Ensure the correct amount is sent to the UPI ID displayed above.</p>
                       <p>6. Access to course materials will be granted only after payment verification.</p>
                       <p>7. Any misuse of course content, including sharing or redistribution, is strictly prohibited.</p>
-                      <p>8. By completing this payment, you agree to all terms and conditions of Learn With RT.</p>
+                      <p>8. By completing this payment, you agree to all terms and conditions of LearHub.</p>
                     </div>
                   )}
                 </div>

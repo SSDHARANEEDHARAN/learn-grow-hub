@@ -57,7 +57,7 @@ const Footer = () => {
         </div>
 
         <div className="pt-8 border-t border-primary/10 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-muted-foreground font-mono-cyber">© 2024 Learn With RT. All rights reserved.</p>
+          <p className="text-sm text-muted-foreground font-mono-cyber">© 2024 LearHub. All rights reserved.</p>
           <p className="text-sm text-muted-foreground">Made with <span className="text-primary">⚡</span> for learners everywhere</p>
         </div>
       </div>

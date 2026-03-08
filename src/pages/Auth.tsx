@@ -98,7 +98,7 @@ const Auth = () => {
         } else {
           toast({
             title: 'Account created!',
-            description: 'Welcome to Learn With RT!',
+            description: 'Welcome to LearHub!',
           });
           navigate('/');
         }

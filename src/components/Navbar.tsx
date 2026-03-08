@@ -30,7 +30,7 @@ const Navbar = () => {
             <div className="w-10 h-10 bg-primary/10 border border-primary/30 flex items-center justify-center">
               <Zap className="w-5 h-5 text-primary" />
             </div>
-            <span className="font-display font-bold text-lg tracking-wider">LEARN<span className="text-primary">RT</span></span>
+            <span className="font-display font-bold text-lg tracking-wider">LEAR<span className="text-primary">HUB</span></span>
           </Link>
 
           {/* Desktop Navigation */}
