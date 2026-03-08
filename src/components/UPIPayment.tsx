@@ -176,7 +176,7 @@ const UPIPayment = ({ courseId, courseTitle, price, onPaymentComplete }: UPIPaym
     doc.text('1. This is a digital course purchase. No physical delivery applicable.', 20, footerY + 6);
     doc.text('2. Course access is non-transferable and linked to your registered account.', 20, footerY + 12);
     doc.text('3. Refund requests must be made within 7 days of purchase.', 20, footerY + 18);
-    doc.text('4. Learn With RT reserves the right to modify course content.', 20, footerY + 24);
+    doc.text('4. LearHub reserves the right to modify course content.', 20, footerY + 24);
     doc.text(`Generated on ${new Date().toLocaleString('en-IN')} | UPI Payment`, 20, footerY + 34);
 
     doc.save(`Invoice_${transactionRef}.pdf`);
