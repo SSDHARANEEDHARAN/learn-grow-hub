@@ -7,7 +7,7 @@ import CourseContent from '@/components/CourseContent';
 import CommentsSection from '@/components/CommentsSection';
 import QuizComponent from '@/components/QuizComponent';
 import ReviewsSection from '@/components/ReviewsSection';
-import PaymentButton from '@/components/PaymentButton';
+import UPIPayment from '@/components/UPIPayment';
 import RewardPointsDisplay from '@/components/RewardPointsDisplay';
 import EnrollmentForm from '@/components/EnrollmentForm';
 import HardwarePurchaseForm from '@/components/HardwarePurchaseForm';
@@ -211,18 +211,15 @@ const CourseDetail = () => {
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      <Button 
-                        variant="hero" 
-                        className="w-full gap-2" 
-                        size="lg"
-                        onClick={() => user ? setEnrollmentFormOpen(true) : navigate('/auth')}
-                      >
-                        <BookOpen className="w-5 h-5" />
-                        Enroll Now
-                      </Button>
+                      <UPIPayment
+                        courseId={course.id}
+                        courseTitle={course.title}
+                        price={course.price || 0}
+                        onPaymentComplete={() => window.location.reload()}
+                      />
                       <div className="flex items-center gap-2 text-sm text-muted-foreground justify-center">
                         <Lock className="w-4 h-4" />
-                        <span>Payment required after enrollment</span>
+                        <span>UPI payment • Instant access after verification</span>
                       </div>
                       <Button 
                         variant="outline" 
