@@ -29,7 +29,7 @@ export const useCourses = () => {
   return useQuery({
     queryKey: ['courses'],
     queryFn: async () => {
-      // Fetch published courses with instructor info
+      // Fetch published courses with instructor info and modules+lessons in one query
       const { data: courses, error } = await supabase
         .from('courses')
         .select(`
@@ -38,71 +38,39 @@ export const useCourses = () => {
             id,
             full_name,
             avatar_url
-          )
+          ),
+          modules (
+            id,
+            lessons (id)
+          ),
+          enrollments (id),
+          reviews!reviews_course_id_fkey (rating, is_approved)
         `)
         .eq('is_published', true)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      // Fetch additional stats for each course
-      const coursesWithStats = await Promise.all(
-        (courses || []).map(async (course) => {
-          // Get lessons count via modules
-          let lessonsCount = 0;
-          try {
-            const { data: modules } = await supabase
-              .from('modules')
-              .select('id')
-              .eq('course_id', course.id);
+      return (courses || []).map((course: any) => {
+        const lessons = course.modules?.flatMap((m: any) => m.lessons || []) || [];
+        const approvedReviews = course.reviews?.filter((r: any) => r.is_approved) || [];
+        const avgRating = approvedReviews.length
+          ? approvedReviews.reduce((acc: number, r: any) => acc + r.rating, 0) / approvedReviews.length
+          : 0;
 
-            if (modules && modules.length > 0) {
-              const { count } = await supabase
-                .from('lessons')
-                .select('id', { count: 'exact', head: true })
-                .in('module_id', modules.map(m => m.id));
-              lessonsCount = count || 0;
-            }
-          } catch {}
-
-          // Get students count
-          let studentsCount = 0;
-          try {
-            const { count } = await supabase
-              .from('enrollments')
-              .select('id', { count: 'exact', head: true })
-              .eq('course_id', course.id);
-            studentsCount = count || 0;
-          } catch {}
-
-          // Get reviews stats
-          let avgRating = 0;
-          let reviewCount = 0;
-          try {
-            const { data: reviews } = await supabase
-              .from('reviews')
-              .select('rating')
-              .eq('course_id', course.id)
-              .eq('is_approved', true);
-
-            if (reviews?.length) {
-              avgRating = reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length;
-              reviewCount = reviews.length;
-            }
-          } catch {}
-
-          return {
-            ...course,
-            instructor: course.profiles,
-            lessons_count: lessonsCount,
-            students_count: studentsCount,
-            average_rating: Math.round(avgRating * 10) / 10,
-            review_count: reviewCount,
-          } as CourseWithDetails;
-        })
-      );
-
-      return coursesWithStats;
+        return {
+          ...course,
+          instructor: course.profiles,
+          modules: undefined,
+          enrollments: undefined,
+          reviews: undefined,
+          profiles: undefined,
+          lessons_count: lessons.length,
+          students_count: course.enrollments?.length || 0,
+          average_rating: Math.round(avgRating * 10) / 10,
+          review_count: approvedReviews.length,
+        } as CourseWithDetails;
+      });
     },
   });
 };
