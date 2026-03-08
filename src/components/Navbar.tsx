@@ -35,7 +35,7 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            {[
+          {[
               { path: '/', label: 'Home' },
               { path: '/courses', label: 'Courses' },
               { path: '/dashboard', label: 'My Learning' },
@@ -51,14 +51,24 @@ const Navbar = () => {
               </Link>
             ))}
             {user && (
-              <Link 
-                to="/instructor" 
-                className={`text-sm font-medium tracking-wider uppercase transition-colors ${
-                  isActive('/instructor') ? 'text-primary neon-text' : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Instructor
-              </Link>
+              <>
+                <Link 
+                  to="/student-dashboard" 
+                  className={`text-sm font-medium tracking-wider uppercase transition-colors ${
+                    isActive('/student-dashboard') ? 'text-primary neon-text' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Student Dashboard
+                </Link>
+                <Link 
+                  to="/instructor" 
+                  className={`text-sm font-medium tracking-wider uppercase transition-colors ${
+                    isActive('/instructor') ? 'text-primary neon-text' : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Instructor
+                </Link>
+              </>
             )}
           </div>
 
@@ -138,7 +148,10 @@ const Navbar = () => {
               <Link to="/courses" className="px-4 py-2 text-sm font-medium tracking-wider uppercase hover:bg-primary/10 hover:text-primary">Courses</Link>
               <Link to="/dashboard" className="px-4 py-2 text-sm font-medium tracking-wider uppercase hover:bg-primary/10 hover:text-primary">My Learning</Link>
               {user && (
-                <Link to="/instructor" className="px-4 py-2 text-sm font-medium tracking-wider uppercase hover:bg-primary/10 hover:text-primary">Instructor</Link>
+                <>
+                  <Link to="/student-dashboard" className="px-4 py-2 text-sm font-medium tracking-wider uppercase hover:bg-primary/10 hover:text-primary">Student Dashboard</Link>
+                  <Link to="/instructor" className="px-4 py-2 text-sm font-medium tracking-wider uppercase hover:bg-primary/10 hover:text-primary">Instructor</Link>
+                </>
               )}
               {user ? (
                 <Button onClick={signOut} variant="outline" className="mt-2 border-primary/30">Sign Out</Button>
