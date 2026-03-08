@@ -48,38 +48,56 @@ export const useCourses = () => {
       // Fetch additional stats for each course
       const coursesWithStats = await Promise.all(
         (courses || []).map(async (course) => {
-          // Get lessons count
-          const { count: lessonsCount } = await supabase
-            .from('lessons')
-            .select('id', { count: 'exact', head: true })
-            .in('module_id', 
-              (await supabase.from('modules').select('id').eq('course_id', course.id)).data?.map(m => m.id) || []
-            );
+          // Get lessons count via modules
+          let lessonsCount = 0;
+          try {
+            const { data: modules } = await supabase
+              .from('modules')
+              .select('id')
+              .eq('course_id', course.id);
+
+            if (modules && modules.length > 0) {
+              const { count } = await supabase
+                .from('lessons')
+                .select('id', { count: 'exact', head: true })
+                .in('module_id', modules.map(m => m.id));
+              lessonsCount = count || 0;
+            }
+          } catch {}
 
           // Get students count
-          const { count: studentsCount } = await supabase
-            .from('enrollments')
-            .select('id', { count: 'exact', head: true })
-            .eq('course_id', course.id);
+          let studentsCount = 0;
+          try {
+            const { count } = await supabase
+              .from('enrollments')
+              .select('id', { count: 'exact', head: true })
+              .eq('course_id', course.id);
+            studentsCount = count || 0;
+          } catch {}
 
           // Get reviews stats
-          const { data: reviews } = await supabase
-            .from('reviews')
-            .select('rating')
-            .eq('course_id', course.id)
-            .eq('is_approved', true);
+          let avgRating = 0;
+          let reviewCount = 0;
+          try {
+            const { data: reviews } = await supabase
+              .from('reviews')
+              .select('rating')
+              .eq('course_id', course.id)
+              .eq('is_approved', true);
 
-          const avgRating = reviews?.length 
-            ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length 
-            : 0;
+            if (reviews?.length) {
+              avgRating = reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length;
+              reviewCount = reviews.length;
+            }
+          } catch {}
 
           return {
             ...course,
             instructor: course.profiles,
-            lessons_count: lessonsCount || 0,
-            students_count: studentsCount || 0,
+            lessons_count: lessonsCount,
+            students_count: studentsCount,
             average_rating: Math.round(avgRating * 10) / 10,
-            review_count: reviews?.length || 0,
+            review_count: reviewCount,
           } as CourseWithDetails;
         })
       );
