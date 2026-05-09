@@ -12,6 +12,7 @@ import UPIPayment from '@/components/UPIPayment';
 import RewardPointsDisplay from '@/components/RewardPointsDisplay';
 import EnrollmentForm from '@/components/EnrollmentForm';
 import HardwarePurchaseForm from '@/components/HardwarePurchaseForm';
+import CourseMaterials from '@/components/CourseMaterials';
 import { useCourse } from '@/hooks/useCourses';
 import { useEnrollment } from '@/hooks/useEnrollment';
 import { useLessonProgress } from '@/hooks/useLessonProgress';
@@ -295,6 +296,7 @@ const CourseDetail = () => {
                   <TabsList className="bg-secondary/50 p-1">
                     <TabsTrigger value="overview">Overview</TabsTrigger>
                     <TabsTrigger value="reviews">Reviews</TabsTrigger>
+                    <TabsTrigger value="materials">Materials</TabsTrigger>
                     <TabsTrigger value="ai-quiz" className="gap-1">
                       <Sparkles className="w-3 h-3" /> AI Quiz
                     </TabsTrigger>
@@ -338,6 +340,18 @@ const CourseDetail = () => {
 
                   <TabsContent value="reviews">
                     <ReviewsSection courseId={course.id} />
+                  </TabsContent>
+
+                  <TabsContent value="materials">
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="font-display font-semibold text-xl mb-1">Course Materials</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Download notes, slides and resources shared by the instructor.
+                        </p>
+                      </div>
+                      <CourseMaterials courseId={course.id} canAccess={canAccessCourse} />
+                    </div>
                   </TabsContent>
 
                   <TabsContent value="ai-quiz">

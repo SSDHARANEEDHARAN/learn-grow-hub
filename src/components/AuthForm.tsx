@@ -64,7 +64,7 @@ const AuthForm = ({ role, icon, title }: AuthFormProps) => {
           navigate(redirectPath);
         }
       } else {
-        const { error } = await signUp(email, password, fullName);
+        const { error } = await signUp(email, password, fullName, role);
         if (error) {
           toast({
             variant: 'destructive',
